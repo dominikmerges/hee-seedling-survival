@@ -1,6 +1,10 @@
 
+
+
+format.seedling <- function(file){
+
 #Read in file
-raw <- read.csv('seedlingmaster.csv',header=TRUE,na.strings="")
+raw <- read.csv(file,header=TRUE,na.strings="")
 
 #Tier 1: Site (not unit), 15 total (3*4+3)
 #Tier 2: Plot (4 per  cleracut site, 2 per shelterwood, 12*4+3*2 = 54 total)
@@ -30,7 +34,7 @@ herbivory <- c(rep(c(0,0,1,1),4),0,1)
 competition <- c(rep(c(0,1,0,1),4),1,1)
 distance <- NA
 
-plot.data <- data.frame(unit,siteid=plot.siteid,plotid,code,herbivory,competition,distance)
+plot.data <- data.frame(unit=plotunit,siteid=plot.siteid,plotid,code,herbivory,competition,distance)
 
 #Seedling info
 
@@ -89,6 +93,18 @@ for (i in 1:nrow(surv)){
   }  
 }
 
+reappear <- rep(0,nrow(surv))
+for (i in 1:nrow(surv)){
+  
+  if(any(surv[i,]==0)){
+  
+  st <- min(which(surv[i,]==0))
+  
+  if(any(surv[i,st:ncol(surv)]==1,na.rm=TRUE)){
+    reappear[i] <- 1}
+  }
+}
+
 notes <- raw[,which(ind=='Notes')]
 notes <- cbind(rep(NA,nrow(notes)),notes)
 names(notes) <- c('Notes',paste('Notes.',1:(ncol(surv)-1),sep=""))
@@ -102,12 +118,27 @@ sprout.keywords <- c('sprout','resprout','sprout?','sprout/alive','weakly sprout
 sprout <- matrix(0,ncol=ncol(notes),nrow=nrow(notes))
 sprout[which(notes%in%sprout.keywords,arr.ind=TRUE)] <- 1
 
-which(rowSums(sprout)>0)
+#which(rowSums(sprout)>0)
+
+#Survival including sprouting
+
+surv.sprout <- surv
+
+for (i in 1:nrow(surv)){
+  if(sum(sprout[i,])>0 && 0%in%surv[i,]){
+    surv.sprout[i,1:(tail(which(surv[i,]==0),n=1)-1)] = 1
+    
+    if(!is.na(surv[i,ncol(surv)])&&surv[i,ncol(surv)]==1){
+      surv.sprout[i,1:ncol(surv)] <- 1
+    }
+  }
+
+}
 
 #Identify problematic seedlings
-t3 <- which(reappear==1)
-t3 <- t3[!which(reappear==1)%in%which(rowSums(sprout)>0)]
-surv[t3,] # should be empty
+#t3 <- which(reappear==1)
+#t3 <- t3[!which(reappear==1)%in%which(rowSums(sprout)>0)]
+#surv[t3,] # should be empty
 
 #Leaf damage
 
@@ -165,3 +196,29 @@ for (i in 1:ncol(rcdgrowth)){
 #Browse damage
 
 browseraw <- data.frame(raw[,which(ind=='Browse')])
+
+browsedeer <- matrix(NA,nrow=nrow(browseraw),ncol=ncol(browseraw))
+
+browsedeer[which(browseraw==0,arr.ind=TRUE)] <- 0
+browseother <- browse <- browsedeer
+
+browsedeer[which((browseraw=='1d'|browseraw=='1D'),arr.ind=TRUE)] <- 1
+browsedeer[which((browseraw=='2d'|browseraw=='2D'),arr.ind=TRUE)] <- 2
+browsedeer[which((browseraw=='3d'|browseraw=='3D'),arr.ind=TRUE)] <- 3
+
+browseother[which((browseraw=='1r'|browseraw=='1R'),arr.ind=TRUE)] <- 1
+browseother[which((browseraw=='2r'|browseraw=='2R'),arr.ind=TRUE)] <- 2
+browseother[which((browseraw=='3r'|browseraw=='3R'),arr.ind=TRUE)] <- 3
+
+browse[which((browseraw=='1r'|browseraw=='1R'|browseraw=='1d'|browseraw=='1D'),arr.ind=TRUE)] <- 1
+browse[which((browseraw=='2r'|browseraw=='2R'|browseraw=='2d'|browseraw=='2D'),arr.ind=TRUE)] <- 2
+browse[which((browseraw=='3r'|browseraw=='3R'|browseraw=='3d'|browseraw=='3D'),arr.ind=TRUE)] <- 3
+
+output <- list(site.data=site.data,plot.data=plot.data,seedling.data=seedling.data,
+               surv=surv,surv.sprout=surv.sprout,
+               reappear=reappear,sprout=sprout,lfdmg=lfdmg,browse=browse,browsedeer=browsedeer,
+               browseother=browseother,height=height,htgrowth=htgrowth,rcd=rcd,
+               rcdgrowth=rcdgrowth,plant.date=plant.date,sample.dates=sample.dates,notes=notes)
+
+return(output)
+}
