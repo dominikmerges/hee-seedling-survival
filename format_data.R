@@ -1,7 +1,7 @@
 
 
 
-format.seedling <- function(file){
+format.seedling <- function(eh.file,cov.file){
 
 #Read in file
 raw <- read.csv(file,header=TRUE,na.strings="")
