@@ -28,8 +28,15 @@ model {
                       + b.comp*comp[seed.plotcode[i],j] + b.herb*herb[seed.plotcode[i],j]
                       + b.elapsed*elapsed[seed.sitecode[i],j]
       
+      res[cucount[i,j]] <- abs(surv[i,j] - psi[i,j])
+      surv.new[i,j] ~ dbern(psi[i,j])
+      res.new[cucount[i,j]] <- abs(surv.new[i,j] - psi[i,j])
+      
     }
   }
+  
+  fit <- sum(res[])
+  fit.new <- sum(res.new[])
   
   #Priors
   

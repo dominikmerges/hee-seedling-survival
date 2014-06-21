@@ -100,18 +100,28 @@ elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 #summer = 1
 season <- c(1,0,1,0,1,0,1,0)
 
+#Index
+
+cucount = matrix(NA, nseedlings, 8)
+index=1
+for(i in 1:nseedlings){
+  for(j in 2:nsamples[i]){
+    cucount[i,j] = index
+    index = index+1
+  }}
+
 ###############################
 
 #Bundle data for JAGS
 
-jags.data <- c('surv','nseedlings','nsamples','nplots','nsites'
+jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
                ,'age','start.height','browse','species'
                #plot covariates
                ,'distance','aspect','canopy','comp','herb'
                #site covariates
-               ,'elapsed','season'              
+               ,'elapsed','season'
                )
 
 ################################
@@ -127,6 +137,7 @@ modFile <- 'models/model_seedling_survival.R'
 params <- c('grand.sd','plot.sd'
             ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect','b.elapsed'
             ,'b.species','b.age','b.browse','b.height','b.season'
+            ,'fit','fit.new'
   )
 
 ################################
