@@ -26,7 +26,7 @@ model {
                       + b.species*species[i] + b.age*age[i] + b.height*start.height[i]
                       + b.browse*browse[i,j-1] + b.season*season[j] 
                       + b.comp*comp[seed.plotcode[i],j] + b.herb*herb[seed.plotcode[i],j]
-                      + b.elapsed*elapsed[seed.sitecode[i],j]
+                      + b.elapsed*elapsed[seed.sitecode[i],j] + b.sprout*is.sprout[i,j-1]
       
       res[cucount[i,j]] <- abs(surv[i,j] - psi[i,j])
       surv.new[i,j] ~ dbern(psi[i,j])
@@ -59,5 +59,6 @@ model {
   b.browse ~ dnorm(0,0.01)
   b.height ~ dnorm(0,0.01)
   b.season ~ dnorm(0,0.01)
+  b.sprout ~ dnorm(0,0.01)
   
 }

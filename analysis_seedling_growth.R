@@ -27,33 +27,26 @@ for (i in 1:dim(sprout.raw)[1]){
     sprout.raw[i,start:dim(sprout.raw)[2]] <- 1
   }
 }
+
 #Select only measurement samples
 sprout.raw <- sprout.raw[,c(2,4,6)]
-end <- numeric(dim(sprout.raw)[1])
-for (i in 1:dim(sprout.raw)[1]){
-  hold <- sprout.raw[i,]
-  if(1%in%hold){
-    end[i] <- min(which(hold==1),na.rm=TRUE) - 1
-  } else {end[i]=3}
-}
 
 surv <- seedling$surv[keep,c(2,4,6)]
-endsurv <- numeric(dim(surv)[1])
+end <- numeric(dim(surv)[1])
 for (i in 1:dim(surv)[1]){
   hold <- surv[i,]
   if(0%in%hold){
-    endsurv[i] <- min(which(hold==0),na.rm=TRUE) - 1
-  } else {endsurv[i]=3}
+    end[i] <- min(which(hold==0),na.rm=TRUE) - 1
+  } else {end[i]=3}
 }
 
-last <- pmin(end,endsurv)
-keep2 <- which(last>0)
+keep2 <- which(end>0)
 
 growth <- seedling$htgrowth[keep,]
 growth <- growth[keep2,]
 
-nsamples <- last[keep2]
-last <-last[keep2]
+nsamples <- end[keep2]
+
 
 
 #Seedling-level covariates
@@ -74,12 +67,14 @@ browse[which(browse>1,arr.ind=TRUE)] = 1
 
 #Browse quality control
 for (i in 1:nseedlings){
-  for (j in 1:last[i]){
+  for (j in 1:nsamples[i]){
     if(is.na(browse[i,j])){
       browse[i,j] <- 0
     }
   }
 }
+
+is.sprout <- sprout.raw[keep2,]
 
 #Format plot-level variables
 nplots <- 48
@@ -102,7 +97,7 @@ nsites <- 12
 cucount = matrix(NA, nseedlings, 4)
 index=1
 for(i in 1:nseedlings){
-  for(j in 1:last[i]){
+  for(j in 1:nsamples[i]){
     cucount[i,j] = index
     index = index+1
   }}
@@ -114,7 +109,7 @@ for(i in 1:nseedlings){
 jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               ,'age','start.height','browse','species'
+               ,'age','start.height','browse','species','is.sprout'
                #plot covariates
                ,'distance','aspect','canopy','comp','herb'
 )
@@ -131,7 +126,7 @@ modFile <- 'models/model_seedling_growth.R'
 
 params <- c('grand.sd','plot.sd','ind.sd'
             ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect'
-            ,'b.species','b.age','b.browse','b.height'
+            ,'b.species','b.age','b.browse','b.height','b.sprout'
             ,'fit','fit.new'
 )
 
@@ -143,3 +138,5 @@ require(jagsUI)
 
 growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
+
+pp.check(growth.output,'fit','fit.new')

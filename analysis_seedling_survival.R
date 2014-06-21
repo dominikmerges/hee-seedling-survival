@@ -57,6 +57,17 @@ species <- seedling.covs$species
 browse <- seedling$browse[keep,]
 browse[which(browse>1,arr.ind=TRUE)] = 1
 
+sprout.raw <- seedling$sprout[keep,]
+
+for (i in 1:dim(sprout.raw)[1]){
+  hold <- sprout.raw[i,]
+  if(1%in%hold){
+    start <- min(which(hold==1),na.rm=TRUE)
+    sprout.raw[i,start:dim(sprout.raw)[2]] <- 1
+  }
+}
+is.sprout <- sprout.raw
+
 #Browse quality control
 for (i in 1:nseedlings){
   for (j in 2:nsamples[i]){
@@ -107,7 +118,7 @@ for(i in 1:nseedlings){
 jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               ,'age','start.height','browse','species'
+               ,'age','start.height','browse','species','is.sprout'
                #plot covariates
                ,'distance','aspect','canopy','comp','herb'
                #site covariates
@@ -126,7 +137,7 @@ modFile <- 'models/model_seedling_survival.R'
 
 params <- c('grand.sd','plot.sd'
             ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect','b.elapsed'
-            ,'b.species','b.age','b.browse','b.height','b.season'
+            ,'b.species','b.age','b.browse','b.height','b.season','b.sprout'
             ,'fit','fit.new'
   )
 
