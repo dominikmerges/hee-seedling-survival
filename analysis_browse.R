@@ -1,23 +1,3 @@
-
-
-
-#Analyses Ideas
-
-#1. Seedling survival
-#     Random Covariates:
-#     - Site (n=15)
-#     - Plot (n=54)
-#     Fixed covariates:
-#     - Distance to edge (?), how to deal with shelterwoods?
-#     - Species
-#     - Source (0-0 or 1-0)
-#     - Initial height (z-score separated by source)
-#     - Canopy cover done
-#     - Competition (stem density?) done
-#     - Browse at time t-1 done
-#     - Time since establishment done
-#
-
 #3. Browse intensity (how to calculate?)
 #     Random Covariates:
 #     - Site, plot
@@ -31,18 +11,19 @@
 source('format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('seedlingmaster.csv')
+seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established" and were not in shelterwoods
 keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
 
-#Response variable
+#Survival
 surv <- seedling$surv.sprout[keep,]
-
 nsamples <- numeric(dim(surv)[1])
 for (i in 1:dim(surv)[1]){
   nsamples[i] <- length(na.omit(surv[i,]))
 }
+
+nsamples <- nsamples
 
 #Seedling-level covariates
 nseedlings <- dim(surv)[1]
@@ -55,18 +36,6 @@ species <- seedling.covs$species
 
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
-browse[which(browse>1,arr.ind=TRUE)] = 1
-
-sprout.raw <- seedling$sprout[keep,]
-
-for (i in 1:dim(sprout.raw)[1]){
-  hold <- sprout.raw[i,]
-  if(1%in%hold){
-    start <- min(which(hold==1),na.rm=TRUE)
-    sprout.raw[i,start:dim(sprout.raw)[2]] <- 1
-  }
-}
-is.sprout <- sprout.raw
 
 #Browse quality control
 for (i in 1:nseedlings){
@@ -77,14 +46,17 @@ for (i in 1:nseedlings){
   }
 }
 
+#Final response variable (all browse events)
+browse <- browse + 1
+
 #Format plot-level variables
 nplots <- 48
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
-aspect <- seedling$plot.data$aspect
-canopy <- seedling$plot.data$canopy
-canopy[4] <- 0
+distance2 <- distance^2
+
 plot.sitecode <- seedling$plot.data$siteid
+exclude <- 1 - seedling$plot.data$herbivory
 
 #Competition
 comp <- seedling$comp.data[,1,]
@@ -94,8 +66,22 @@ herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
 nsites <- 12
-elapsed.raw <- as.matrix(seedling$elapsed)
-elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
+
+#Pellet Counts
+pellet <- as.matrix(read.csv('data/pellet.csv',header=TRUE))
+#pellet <- as.matrix(pellet.raw)*15
+#pindex <- c(1,1,2,2,3,3,4,4)
+pelmean <- vector(length=nsites)
+
+for (i in 1:nsites){
+  #site.dist[i] <- mean(plot.data$distanceZ[plot.data$siteid==i],na.rm=TRUE)
+  pelmean[i] <- mean(pellet[i,],na.rm=TRUE)
+}
+
+#pelmean <- as.numeric(scale(pelmean))
+
+#Stick in mean values
+pellet[,1] <- pelmean
 
 #Season vector
 #summer = 1
@@ -115,41 +101,56 @@ for(i in 1:nseedlings){
 
 #Bundle data for JAGS
 
-jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
-               ,'seed.plotcode','plot.sitecode','seed.sitecode'
+jags.data <- c('browse','nseedlings','nplots','nsites','nsamples'
+               ,'seed.plotcode','seed.sitecode'
                #seedling covariates
-               ,'age','start.height','browse','species','is.sprout'
+               ,'age','start.height','species'
                #plot covariates
-               ,'distance','aspect','canopy','comp','herb'
+               ,'distance'
+               ,'comp','herb','exclude'
                #site covariates
-               ,'elapsed','season'
-               )
+               ,'pellet'
+               #,'season'
+               #,'pelmean','site.dist'
+               ,'pindex'
+               #,'cucount'
+)
 
 ################################
 
 #Model file
 
-modFile <- 'models/model_seedling_survival.R'
+modFile <- 'models/model_browse.R'
 
 ################################
 
 #Parameters to save
 
-params <- c('grand.sd','plot.sd','grand.mean'
-            ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect','b.elapsed'
-            ,'b.species','b.age','b.browse','b.height','b.season','b.sprout'
-            ,'fit','fit.new'
-  )
+params <- c('site.sd','plot.sd'
+            ,'b.herb','b.comp','b.distance'
+            ,'b.exclude'
+            ,'b.species','b.age','b.height'#,'plot.effect'
+            ,'b.pellet'
+            #,'b.season'
+            #,'fit','fit.new'
+            #,'site.effect'
+)
 
 ################################
+
+inits <- function(){
+  list(
+    "tau0" = matrix(c(-0.5,0,0.5),nrow=3,ncol=8)
+    )
+}
 
 #Run analysis
 
 require(jagsUI)
 
-surv.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
+browse.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
+                      n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
 
-save(surv.output,file='shiny-seedsurv/survoutput.Rda')
+browse.output <- update(browse.output,parameters.to.save=params, n.iter=2)
 
-
+pp.check(browse.output,'fit','fit.new')

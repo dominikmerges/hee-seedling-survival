@@ -124,7 +124,7 @@ modFile <- 'models/model_seedling_growth.R'
 
 #Parameters to save
 
-params <- c('grand.sd','plot.sd','ind.sd'
+params <- c('grand.sd','plot.sd','ind.sd','grand.mean'
             ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect'
             ,'b.species','b.age','b.browse','b.height','b.sprout'
             ,'fit','fit.new'
@@ -140,3 +140,5 @@ growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFil
                     n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
 
 pp.check(growth.output,'fit','fit.new')
+
+save(growth.output,file="shiny-seedsurv/growthoutput.Rda")
