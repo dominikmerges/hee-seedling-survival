@@ -31,7 +31,7 @@
 source('format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('seedlingmaster.csv')
+seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established" and were not in shelterwoods
 keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
@@ -51,6 +51,28 @@ seed.sitecode <- seedling.covs$siteid
 seed.plotcode <- seedling.covs$plotid
 age <- seedling.covs$age
 start.height <- seedling.covs$initialhtZ
+
+#Root collar diameter - relate size and survival
+
+rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,2],seedling$rcd[,3],
+                 seedling$rcd[,3],seedling$rcd[,4],seedling$rcd[,4]))
+rcd.raw <- rcd.raw[keep,]
+
+rcd.raw[is.na(rcd.raw[,1])&age==1,1] <- mean(rcd.raw[age==1,1],na.rm=TRUE)
+rcd.raw[is.na(rcd.raw[,1])&age==0,1] <- mean(rcd.raw[age==0,1],na.rm=TRUE)
+
+for (i in 1:dim(surv)[1]){
+  for (j in 2:8){
+    if(!is.na(surv[i,j])){
+      if(is.na(rcd.raw[i,(j-1)])){
+        rcd.raw[i,(j-1)] <- rcd.raw[i,(j-2)]  
+        }
+      }
+    }
+  }
+
+rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
+
 species <- seedling.covs$species
 
 #Browse - simplify to presence/absence for now
@@ -81,6 +103,8 @@ for (i in 1:nseedlings){
 nplots <- 48
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
+distance2 <- seedling$plot.data$distance2Z
+distance2[4] <- 0
 aspect <- seedling$plot.data$aspect
 canopy <- seedling$plot.data$canopy
 canopy[4] <- 0
@@ -88,7 +112,7 @@ plot.sitecode <- seedling$plot.data$siteid
 
 #Competition
 comp <- seedling$comp.data[,1,]
-herb <- seedling$comp.data[,2,]
+#herb <- seedling$comp.data[,2,]
 comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
@@ -118,9 +142,11 @@ for(i in 1:nseedlings){
 jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               ,'age','start.height','browse','species','is.sprout'
+               #,'age','start.height'
+               ,'browse','species','is.sprout'
                #plot covariates
-               ,'distance','aspect','canopy','comp','herb'
+               ,'distance','distance2','aspect','canopy','comp','rcd'
+               #,'herb'
                #site covariates
                ,'elapsed','season'
                )
@@ -136,8 +162,14 @@ modFile <- 'models/model_seedling_survival.R'
 #Parameters to save
 
 params <- c('grand.sd','plot.sd','grand.mean'
-            ,'b.browse','b.herb','b.canopy','b.comp','b.distance','b.aspect','b.elapsed'
-            ,'b.species','b.age','b.browse','b.height','b.season','b.sprout'
+            ,'b.browse'
+            #,'b.herb'
+            ,'b.canopy','b.comp','b.distance'
+            #,'b.distance2'
+            ,'b.aspect','b.elapsed'
+            ,'b.species','b.rcd'
+            #,'b.age','b.height'
+            ,'b.browse','b.season','b.sprout'
             ,'fit','fit.new'
   )
 
@@ -145,7 +177,7 @@ params <- c('grand.sd','plot.sd','grand.mean'
 
 #Run analysis
 
-require(jagsUI)
+library(jagsUI)
 
 surv.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)

@@ -11,7 +11,8 @@ model {
     plot.mean[i] ~ dnorm(plot.pred[i], plot.tau)
     plot.pred[i] <- site.mean[plot.sitecode[i]] 
                   + b.canopy*canopy[i]
-                  + b.distance*distance[i] + b.aspect*aspect[i]
+                  + b.distance*distance[i] + b.distance2*distance2[i]
+                  + b.aspect*aspect[i]
                   
   }
   
@@ -42,6 +43,7 @@ model {
   
   b.canopy ~ dnorm(0,0.01)
   b.distance ~ dnorm(0,0.01)
+  b.distance2 ~ dnorm(0,0.01)
   b.aspect ~ dnorm(0,0.01)
   
   b.species ~ dnorm(0,0.01)

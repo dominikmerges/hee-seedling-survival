@@ -10,7 +10,7 @@ coords <- read.csv('data/plotcoords.csv',header=TRUE)
 comp <- read.csv('data/competition.csv',header=TRUE)
 
 #Tier 1: Site (not unit), 15 total (3*4+3)
-#Tier 2: Plot (4 per  cleracut site, 2 per shelterwood, 12*4+3*2 = 54 total)
+#Tier 2: Plot (4 per  clearcut site, 2 per shelterwood, 12*4+3*2 = 54 total)
 #Tier 3: Individual seedlings x time
 
 #Site info
@@ -37,6 +37,7 @@ herbivory <- c(rep(c(0,0,1,1),12),rep(c(0,1),3))
 competition <- c(rep(c(0,1,0,1),12),rep(c(1,1),3))
 #positive = into harvest, negative = into matrix
 distanceZ <- as.numeric(scale(coords[,4]))
+distance2Z <- as.numeric(scale((coords[,4] - mean(coords[,4],na.rm=TRUE))^2))
 #SW = 1 NE = 0
 aspect <- as.numeric(coords[,5]=="SW")
 canopy <- as.numeric(scale(comp$DensMean[1:54]))
@@ -70,7 +71,7 @@ for (i in 1:4){
   index2 = index2 + 2
 }
 
-plot.data <- data.frame(unit=plotunit,siteid=plot.siteid,plotid,code,herbivory,competition,distanceZ,aspect,canopy)
+plot.data <- data.frame(unit=plotunit,siteid=plot.siteid,plotid,code,herbivory,competition,distanceZ,distance2Z,aspect,canopy)
 
 #Seedling info
 

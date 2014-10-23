@@ -70,7 +70,7 @@ nsites <- 12
 #Pellet Counts
 pellet <- as.matrix(read.csv('data/pellet.csv',header=TRUE))
 #pellet <- as.matrix(pellet.raw)*15
-#pindex <- c(1,1,2,2,3,3,4,4)
+pindex <- c(1,1,2,2,3,3,4,4)
 pelmean <- vector(length=nsites)
 
 for (i in 1:nsites){

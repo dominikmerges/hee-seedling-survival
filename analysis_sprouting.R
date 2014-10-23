@@ -41,6 +41,8 @@ species <- seedling.covs$species
 nplots <- 48
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
+distance2 <- seedling$plot.data$distance2Z
+distance2[4] <- 0
 aspect <- seedling$plot.data$aspect
 canopy <- seedling$plot.data$canopy
 canopy[4] <- 0
@@ -58,7 +60,7 @@ jags.data <- c('sprouted','nseedlings','nplots','nsites','cucount'
                #seedling covariates
                ,'age','start.height','species'
                #plot covariates
-               ,'distance','aspect','canopy'
+               ,'distance','distance2','aspect','canopy'
 )
 
 ################################
@@ -72,7 +74,7 @@ modFile <- 'models/model_seedling_sprout.R'
 #Parameters to save
 
 params <- c('grand.sd','plot.sd'
-            ,'b.canopy','b.distance','b.aspect'
+            ,'b.canopy','b.distance','b.distance2','b.aspect'
             ,'b.species','b.age','b.height'
             ,'fit','fit.new'
 )
@@ -81,7 +83,7 @@ params <- c('grand.sd','plot.sd'
 
 #Run analysis
 
-require(jagsUI)
+library(jagsUI)
 
 sprout.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                       n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
