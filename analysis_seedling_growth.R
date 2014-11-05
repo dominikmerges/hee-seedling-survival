@@ -13,10 +13,11 @@
 source('format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('seedlingmaster.csv')
+seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established" and were not in shelterwoods
-keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+#keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+keep <- which(seedling$surv.sprout[,1]==1)
 
 sprout.raw <- seedling$sprout[keep,]
 
@@ -101,7 +102,7 @@ for (i in 1:nseedlings){
 is.sprout <- sprout.raw[keep2,]
 
 #Format plot-level variables
-nplots <- 48
+nplots <- 54
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
 distance2 <- seedling$plot.data$distance2Z
@@ -111,6 +112,10 @@ canopy <- seedling$plot.data$canopy
 canopy[4] <- 0
 plot.sitecode <- seedling$plot.data$siteid
 
+edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
+harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
+shelter <- c(rep(0,48),rep(1,6))
+
 #Competition
 comp <- seedling$comp.data[,1,][,c(1,3,5,7)]
 #herb <- seedling$comp.data[,2,][,c(1,3,5,7)]
@@ -118,7 +123,7 @@ comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 #herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
-nsites <- 12
+nsites <- 15
 
 cucount = matrix(NA, nseedlings, 4)
 index=1
@@ -138,10 +143,11 @@ jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'
                #,'age','start.height'
                ,'rcd','browse','species','is.sprout'
                #plot covariates
-               ,'distance'
+               #,'distance'
                #,'distance2'
                ,'aspect'
-               ,'canopy'
+               ,'edge','harvest','shelter'
+               #,'canopy'
                ,'comp'
                #,'herb'
 )
@@ -156,19 +162,21 @@ modFile <- 'models/model_seedling_growth.R'
 
 #Parameters to save
 
-params <- c('grand.sd','plot.sd','ind.sd','grand.mean'
+params <- c('site.sd','plot.sd','ind.sd','grand.mean'
             ,'b.browse'
             #,'b.herb',
-            ,'b.canopy'
-            ,'b.comp','b.distance'
+            #,'b.canopy'
+            ,'b.comp'
+            #,'b.distance'
             #,'b.distance2'
             ,'b.aspect'
+            ,'b.edge','b.harvest','b.shelter'
             ,'b.species'
             #,'b.age'
             ,'b.browse'
             #,'b.height'
             ,'b.sprout'
-            ,'b.rcd'
+            #,'b.rcd'
             ,'fit','fit.new'
 )
 
@@ -179,8 +187,8 @@ params <- c('grand.sd','plot.sd','ind.sd','grand.mean'
 library(jagsUI)
 
 growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=4000,n.burnin=3000,n.thin=2,parallel=TRUE)
+                    n.chains=3,n.iter=8000,n.burnin=5000,n.thin=2,parallel=TRUE)
 
 pp.check(growth.output,'fit','fit.new')
 
-save(growth.output,file="shiny-seedsurv/growthoutput.Rda")
+save(growth.output,file="output/growth_output.Rda")

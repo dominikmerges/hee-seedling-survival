@@ -14,14 +14,38 @@ source('format_data.R')
 seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established" and were not in shelterwoods
-keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+#keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+keep <- which(seedling$surv.sprout[,1]==1)
+
+#Root collar diameter - relate size and survival
 
 #Survival
 surv <- seedling$surv.sprout[keep,]
 nsamples <- numeric(dim(surv)[1])
 for (i in 1:dim(surv)[1]){
   nsamples[i] <- length(na.omit(surv[i,]))
+  if(0%in%surv[i,]){nsamples[i] <- nsamples[i]-1}
 }
+
+rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,2],seedling$rcd[,3],
+                           seedling$rcd[,3],seedling$rcd[,4],seedling$rcd[,4]))
+rcd.raw <- rcd.raw[keep,]
+
+rcd.raw[is.na(rcd.raw[,1])&age==1,1] <- mean(rcd.raw[age==1,1],na.rm=TRUE)
+rcd.raw[is.na(rcd.raw[,1])&age==0,1] <- mean(rcd.raw[age==0,1],na.rm=TRUE)
+
+for (i in 1:dim(surv)[1]){
+  for (j in 2:8){
+    if(!is.na(surv[i,j])){
+      if(is.na(rcd.raw[i,(j-1)])){
+        rcd.raw[i,(j-1)] <- rcd.raw[i,(j-2)]  
+      }
+    }
+  }
+}
+rcd.raw[,8] <- rcd.raw[,7]
+
+rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
 
 nsamples <- nsamples
 
@@ -50,10 +74,14 @@ for (i in 1:nseedlings){
 browse <- browse + 1
 
 #Format plot-level variables
-nplots <- 48
+nplots <- 54
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
 distance2 <- distance^2
+
+edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
+harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
+shelter <- c(rep(0,48),rep(1,6))
 
 plot.sitecode <- seedling$plot.data$siteid
 exclude <- 1 - seedling$plot.data$herbivory
@@ -65,7 +93,7 @@ comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
-nsites <- 12
+nsites <- 15
 
 #Pellet Counts
 pellet <- as.matrix(read.csv('data/pellet.csv',header=TRUE))
@@ -85,7 +113,8 @@ pellet[,1] <- pelmean
 
 #Season vector
 #summer = 1
-season <- c(1,0,1,0,1,0,1,0)
+#initial,oct11,may12,oct12,may13,oct13,may14,oct14
+season <- c(1,1,0,1,0,1,0,1)
 
 #Index
 
@@ -104,13 +133,20 @@ for(i in 1:nseedlings){
 jags.data <- c('browse','nseedlings','nplots','nsites','nsamples'
                ,'seed.plotcode','seed.sitecode'
                #seedling covariates
-               ,'age','start.height','species'
+               #,'age','start.height'
+               ,'rcd'
+               ,'species'
                #plot covariates
-               ,'distance'
-               ,'comp','herb','exclude'
+               #,'distance'
+               #,'distance2'
+               ,'edge'
+               ,'harvest'
+               ,'shelter'
+               #,'comp','herb'
+               ,'exclude'
                #site covariates
                ,'pellet'
-               #,'season'
+               ,'season'
                #,'pelmean','site.dist'
                ,'pindex'
                #,'cucount'
@@ -127,11 +163,16 @@ modFile <- 'models/model_browse.R'
 #Parameters to save
 
 params <- c('site.sd','plot.sd'
-            ,'b.herb','b.comp','b.distance'
+            #,'b.herb','b.comp'
+            #,'b.distance'
+            #,'b.distance2'
+            ,'b.edge','b.harvest','b.shelter'
             ,'b.exclude'
-            ,'b.species','b.age','b.height'#,'plot.effect'
+            ,'b.species'
+            ,'b.rcd'
+            #,'b.age','b.height'#,'plot.effect'
             ,'b.pellet'
-            #,'b.season'
+            ,'b.season'
             #,'fit','fit.new'
             #,'site.effect'
 )
@@ -149,8 +190,8 @@ inits <- function(){
 require(jagsUI)
 
 browse.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
-                      n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
+                      n.chains=3,n.iter=5000,n.burnin=3000,n.thin=10,parallel=TRUE)
 
-browse.output <- update(browse.output,parameters.to.save=params, n.iter=2)
+browse.output <- update(browse.output,n.thin=10,n.iter=2000)
 
-pp.check(browse.output,'fit','fit.new')
+save(browse.output,file="output/browse_output.Rda")

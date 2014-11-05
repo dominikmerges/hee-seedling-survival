@@ -34,7 +34,8 @@ source('format_data.R')
 seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established" and were not in shelterwoods
-keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+#keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+keep <- which(seedling$surv.sprout[,1]==1)
 
 #Response variable
 surv <- seedling$surv.sprout[keep,]
@@ -100,7 +101,7 @@ for (i in 1:nseedlings){
 }
 
 #Format plot-level variables
-nplots <- 48
+nplots <- 54
 distance <- seedling$plot.data$distanceZ
 distance[4] <- 0
 distance2 <- seedling$plot.data$distance2Z
@@ -110,6 +111,10 @@ canopy <- seedling$plot.data$canopy
 canopy[4] <- 0
 plot.sitecode <- seedling$plot.data$siteid
 
+edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
+harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
+shelter <- c(rep(0,48),rep(1,6))
+
 #Competition
 comp <- seedling$comp.data[,1,]
 #herb <- seedling$comp.data[,2,]
@@ -117,13 +122,14 @@ comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
-nsites <- 12
+nsites <- 15
 elapsed.raw <- as.matrix(seedling$elapsed)
 elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
 #Season vector
 #summer = 1
-season <- c(1,0,1,0,1,0,1,0)
+#initial,oct11,may12,oct12,may13,oct13,may14,oct14
+season <- c(1,1,0,1,0,1,0,1)
 
 #Index
 
@@ -145,7 +151,9 @@ jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                #,'age','start.height'
                ,'browse','species','is.sprout'
                #plot covariates
-               ,'distance','distance2','aspect','canopy','comp','rcd'
+               #,'distance','distance2','canopy'
+               ,'edge','harvest','shelter'
+               ,'aspect','comp','rcd'
                #,'herb'
                #site covariates
                ,'elapsed','season'
@@ -161,11 +169,14 @@ modFile <- 'models/model_seedling_survival.R'
 
 #Parameters to save
 
-params <- c('grand.sd','plot.sd','grand.mean'
+params <- c('site.sd','plot.sd','grand.mean'
             ,'b.browse'
             #,'b.herb'
-            ,'b.canopy','b.comp','b.distance'
+            #,'b.canopy'
+            ,'b.comp'
+            #,'b.distance'
             #,'b.distance2'
+            ,'b.edge','b.harvest','b.shelter'
             ,'b.aspect','b.elapsed'
             ,'b.species','b.rcd'
             #,'b.age','b.height'
@@ -180,8 +191,8 @@ params <- c('grand.sd','plot.sd','grand.mean'
 library(jagsUI)
 
 surv.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
+                    n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
 
-save(surv.output,file='shiny-seedsurv/survoutput.Rda')
+save(surv.output,file='output/surv_output.Rda')
 
 
