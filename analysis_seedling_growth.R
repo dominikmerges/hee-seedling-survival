@@ -1,26 +1,17 @@
-#2. Seedling growth (height)
-#     Random Covariates:
-#     - Site, plot
-#     Fixed Covariates:
-#     - Canopy cover
-#     - Browse at time t-1
-#     - Height at time t-1
-#     - Competition
-#     - Species
-#     - Source
-#
+#########################################
+######Seedling growth analysis###########
+#########################################
 
 source('format_data.R')
 
 #Initial formatting on raw data
 seedling <- format.seedling('data/seedlingmaster.csv')
 
-#Only keep seedlings that "established" and were not in shelterwoods
-#keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+#Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)
-
 sprout.raw <- seedling$sprout[keep,]
 
+#Keep track of when seedlings became sprouts
 for (i in 1:dim(sprout.raw)[1]){
   hold <- sprout.raw[i,]
   if(1%in%hold){
@@ -28,10 +19,9 @@ for (i in 1:dim(sprout.raw)[1]){
     sprout.raw[i,start:dim(sprout.raw)[2]] <- 1
   }
 }
-
-#Select only measurement samples
 sprout.raw <- sprout.raw[,c(2,4,6,8)]
 
+#Format and clean up height growth data
 ht <- seedling$htgrowth[keep,]
 end <- numeric(dim(ht)[1])
 for (i in 1:dim(ht)[1]){
@@ -42,15 +32,12 @@ for (i in 1:dim(ht)[1]){
     end[i] <- min(firstNA,first0) - 1
   } else {end[i]=4}
 }
-
+#Only keep seedlings which have at least one recorded growth in height
+#(i.e., did not die in period 2)
 keep2 <- which(end>0)
-
 growth <- seedling$htgrowth[keep,]
 growth <- growth[keep2,]
-
 nsamples <- end[keep2]
-
-
 
 #Seedling-level covariates
 nseedlings <- dim(growth)[1]
@@ -59,7 +46,11 @@ seedling.covs <- seedling.covs[keep2,]
 seed.sitecode <- seedling.covs$siteid
 seed.plotcode <- seedling.covs$plotid
 age <- seedling.covs$age
-#start.height <- seedling.covs$initialhtZ
+species <- seedling.covs$species
+
+###################################################Not using
+
+#Format root collar diameter data (not using currently)
 rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,3],
                            seedling$rcd[,4]))
 rcd.raw <- rcd.raw[keep,]
@@ -71,17 +62,11 @@ for (i in 1:dim(growth)[1]){
     if(!is.na(growth[i,j])){
       if(is.na(rcd.raw[i,j])){
         rcd.raw[i,j] <- rcd.raw[i,(j-1)]  
-      }
-    }
-  }
-}
-
+      }}}}
 rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
-
 rcd[47,2] <- -1.32332005
 
-
-species <- seedling.covs$species
+#############################################################################
 
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
@@ -95,36 +80,26 @@ for (i in 1:nseedlings){
   for (j in 1:nsamples[i]){
     if(is.na(browse[i,j])){
       browse[i,j] <- 0
-    }
-  }
-}
+    }}}
 
 is.sprout <- sprout.raw[keep2,]
 
 #Format plot-level variables
 nplots <- 54
-distance <- seedling$plot.data$distanceZ
-distance[4] <- 0
-distance2 <- seedling$plot.data$distance2Z
-distance2[4] <- 0
 aspect <- seedling$plot.data$aspect
-canopy <- seedling$plot.data$canopy
-canopy[4] <- 0
 plot.sitecode <- seedling$plot.data$siteid
-
 edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
 harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
 #Competition
 comp <- seedling$comp.data[,1,][,c(1,3,5,7)]
-#herb <- seedling$comp.data[,2,][,c(1,3,5,7)]
 comp[which(is.na(comp),arr.ind=TRUE)] <- 0
-#herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
 nsites <- 15
 
+#Index for posterior predictive check
 cucount = matrix(NA, nseedlings, 4)
 index=1
 for(i in 1:nseedlings){
@@ -139,17 +114,10 @@ for(i in 1:nseedlings){
 
 jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
-               #seedling covariates
-               #,'age','start.height'
                ,'rcd','browse','species','is.sprout'
-               #plot covariates
-               #,'distance'
-               #,'distance2'
                ,'aspect'
                ,'edge','harvest','shelter'
-               #,'canopy'
                ,'comp'
-               #,'herb'
 )
 
 ################################
@@ -164,19 +132,12 @@ modFile <- 'models/model_seedling_growth.R'
 
 params <- c('site.sd','plot.sd','ind.sd','grand.mean'
             ,'b.browse'
-            #,'b.herb',
-            #,'b.canopy'
             ,'b.comp'
-            #,'b.distance'
-            #,'b.distance2'
             ,'b.aspect'
             ,'b.edge','b.harvest','b.shelter'
             ,'b.species'
-            #,'b.age'
             ,'b.browse'
-            #,'b.height'
             ,'b.sprout'
-            #,'b.rcd'
             ,'fit','fit.new'
 )
 

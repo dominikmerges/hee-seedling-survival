@@ -1,45 +1,19 @@
-
-
-
-#Analyses Ideas
-
-#1. Seedling survival
-#     Random Covariates:
-#     - Site (n=15)
-#     - Plot (n=54)
-#     Fixed covariates:
-#     - Distance to edge (?), how to deal with shelterwoods?
-#     - Species
-#     - Source (0-0 or 1-0)
-#     - Initial height (z-score separated by source)
-#     - Canopy cover done
-#     - Competition (stem density?) done
-#     - Browse at time t-1 done
-#     - Time since establishment done
-#
-
-#3. Browse intensity (how to calculate?)
-#     Random Covariates:
-#     - Site, plot
-#     Fixed Covariates:
-#     - Distance to edge
-#     - Treatment?
-#     - Plant density
-#     - Use (pellet counts)
-#     - Age of opening
+##############################################
+##Seedling Survival Analysis##################
+##############################################
 
 source('format_data.R')
 
 #Initial formatting on raw data
 seedling <- format.seedling('data/seedlingmaster.csv')
 
-#Only keep seedlings that "established" and were not in shelterwoods
-#keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$plotid<49)
+#Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)
 
 #Response variable
 surv <- seedling$surv.sprout[keep,]
 
+#Calculate number of samples for each seedling
 nsamples <- numeric(dim(surv)[1])
 for (i in 1:dim(surv)[1]){
   nsamples[i] <- length(na.omit(surv[i,]))
@@ -51,14 +25,12 @@ seedling.covs <- seedling$seedling.data[keep,]
 seed.sitecode <- seedling.covs$siteid
 seed.plotcode <- seedling.covs$plotid
 age <- seedling.covs$age
-start.height <- seedling.covs$initialhtZ
+species <- seedling.covs$species
 
-#Root collar diameter - relate size and survival
-
+#Root collar diameter format (stand-in for age and initial size)
 rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,2],seedling$rcd[,3],
                  seedling$rcd[,3],seedling$rcd[,4],seedling$rcd[,4]))
 rcd.raw <- rcd.raw[keep,]
-
 rcd.raw[is.na(rcd.raw[,1])&age==1,1] <- mean(rcd.raw[age==1,1],na.rm=TRUE)
 rcd.raw[is.na(rcd.raw[,1])&age==0,1] <- mean(rcd.raw[age==0,1],na.rm=TRUE)
 
@@ -67,16 +39,12 @@ for (i in 1:dim(surv)[1]){
     if(!is.na(surv[i,j])){
       if(is.na(rcd.raw[i,(j-1)])){
         rcd.raw[i,(j-1)] <- rcd.raw[i,(j-2)]  
-        }
-      }
-    }
-  }
+        }}}}
 
 rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
 
-species <- seedling.covs$species
-
-#Browse - simplify to presence/absence for now
+#Format browse data (presence/absence only)
+#and status of seedling as a sprout
 browse <- seedling$browse[keep,]
 browse[which(browse>1,arr.ind=TRUE)] = 1
 
@@ -96,30 +64,19 @@ for (i in 1:nseedlings){
   for (j in 2:nsamples[i]){
     if(!is.na(surv[i,j])&&is.na(browse[i,j-1])){
       browse[i,j-1] <- 0
-    }
-  }
-}
+    }}}
 
 #Format plot-level variables
 nplots <- 54
-distance <- seedling$plot.data$distanceZ
-distance[4] <- 0
-distance2 <- seedling$plot.data$distance2Z
-distance2[4] <- 0
 aspect <- seedling$plot.data$aspect
-canopy <- seedling$plot.data$canopy
-canopy[4] <- 0
 plot.sitecode <- seedling$plot.data$siteid
-
 edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
 harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
 #Competition
 comp <- seedling$comp.data[,1,]
-#herb <- seedling$comp.data[,2,]
 comp[which(is.na(comp),arr.ind=TRUE)] <- 0
-herb[which(is.na(herb),arr.ind=TRUE)] <- 0
 
 #Site level variables
 nsites <- 15
@@ -131,8 +88,7 @@ elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 #initial,oct11,may12,oct12,may13,oct13,may14,oct14
 season <- c(1,1,0,1,0,1,0,1)
 
-#Index
-
+#Sample index for posterior predictive check
 cucount = matrix(NA, nseedlings, 8)
 index=1
 for(i in 1:nseedlings){
@@ -148,13 +104,10 @@ for(i in 1:nseedlings){
 jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               #,'age','start.height'
                ,'browse','species','is.sprout'
                #plot covariates
-               #,'distance','distance2','canopy'
                ,'edge','harvest','shelter'
                ,'aspect','comp','rcd'
-               #,'herb'
                #site covariates
                ,'elapsed','season'
                )
@@ -171,15 +124,10 @@ modFile <- 'models/model_seedling_survival.R'
 
 params <- c('site.sd','plot.sd','grand.mean'
             ,'b.browse'
-            #,'b.herb'
-            #,'b.canopy'
             ,'b.comp'
-            #,'b.distance'
-            #,'b.distance2'
             ,'b.edge','b.harvest','b.shelter'
             ,'b.aspect','b.elapsed'
             ,'b.species','b.rcd'
-            #,'b.age','b.height'
             ,'b.browse','b.season','b.sprout'
             ,'fit','fit.new'
   )

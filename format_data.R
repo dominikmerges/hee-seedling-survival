@@ -91,17 +91,17 @@ for (i in 1:length(seed.siteid)){
 species <- rep(0,dim(raw)[1])
 species[raw$Species=='W'] <- 1
 
-mean0 <- mean(as.double(as.vector(raw$Ht[raw$Age==0])),na.rm=TRUE)
-sd0 <- sd(as.double(as.vector(raw$Ht[raw$Age==0])),na.rm=TRUE)
-mean1 <- mean(as.double(as.vector(raw$Ht[raw$Age==1])),na.rm=TRUE)
-sd1 <- sd(as.double(as.vector(raw$Ht[raw$Age==1])),na.rm=TRUE)
+mean0 <- suppressWarnings(mean(as.double(as.vector(raw$Ht[raw$Age==0])),na.rm=TRUE))
+sd0 <- suppressWarnings(sd(as.double(as.vector(raw$Ht[raw$Age==0])),na.rm=TRUE))
+mean1 <- suppressWarnings(mean(as.double(as.vector(raw$Ht[raw$Age==1])),na.rm=TRUE))
+sd1 <- suppressWarnings(sd(as.double(as.vector(raw$Ht[raw$Age==1])),na.rm=TRUE))
 
 initialhtZ <- numeric(length(species))
 for(i in 1:length(species)){
   if(raw$Age[i]==0){
-    initialhtZ[i] <- (as.double(as.vector(raw$Ht[i])) - mean0) / sd0
+    suppressWarnings(initialhtZ[i] <- (as.double(as.vector(raw$Ht[i])) - mean0) / sd0)
   } else {
-    initialhtZ[i] <- (as.double(as.vector(raw$Ht[i])) - mean1) / sd1
+    suppressWarnings(initialhtZ[i] <- (as.double(as.vector(raw$Ht[i])) - mean1) / sd1)
   }
 }
 initialhtZ[which(is.na(initialhtZ),arr.ind=TRUE)] <- 0
@@ -119,7 +119,7 @@ ind <- as.vector(sapply(names(raw),
 surv <- raw[,which(ind=='Surv')]
 #Fix values in last survival column
 surv[which(surv[,ncol(surv)]=='?'),ncol(surv)] <- 0
-surv <- matrix(as.numeric(as.matrix(surv)),nrow=nrow(surv),ncol=ncol(surv))
+surv <- suppressWarnings(matrix(as.numeric(as.matrix(surv)),nrow=nrow(surv),ncol=ncol(surv)))
 
 #Fix seedlings without recorded deaths
 for (i in 1:nrow(surv)){
@@ -196,7 +196,7 @@ for (i in 1:nrow(surv)){
 #Leaf damage
 
 lfdmg <- raw[,which(ind=='Lfdmg')]
-lfdmg <- matrix(as.numeric(as.matrix(lfdmg)),nrow=nrow(lfdmg),ncol=ncol(lfdmg))
+lfdmg <- suppressWarnings(matrix(as.numeric(as.matrix(lfdmg)),nrow=nrow(lfdmg),ncol=ncol(lfdmg)))
 
 
 #Sample dates
@@ -233,7 +233,7 @@ for (i in 1:ncol(sample.dates)){
 #Height
 
 heightraw <- data.frame(raw[,which(ind=='Ht')])
-height <- matrix(as.numeric(as.matrix(heightraw)),nrow=nrow(heightraw),ncol=ncol(heightraw))
+height <- suppressWarnings(matrix(as.numeric(as.matrix(heightraw)),nrow=nrow(heightraw),ncol=ncol(heightraw)))
 
 #Height growth
 
@@ -245,7 +245,7 @@ for (i in 1:ncol(htgrowth)){
 #Root collar Diameter
 
 rcdraw <- data.frame(raw[,which(ind=='Rt')])
-rcd <- matrix(as.numeric(as.matrix(rcdraw)),nrow=nrow(rcdraw),ncol=ncol(rcdraw))
+rcd <- suppressWarnings(matrix(as.numeric(as.matrix(rcdraw)),nrow=nrow(rcdraw),ncol=ncol(rcdraw)))
 
 #Root collar diameter growth
 
