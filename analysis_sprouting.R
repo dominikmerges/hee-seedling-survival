@@ -6,7 +6,7 @@ seedling <- format.seedling('data/seedlingmaster.csv')
 #Only keep seedlings that "established" and died back during study
 #Also establish when a seedling first sprouted (if any)
 
-include <- first.sprout <- vector(length=dim(surv.raw)[1])
+include <- first.sprout <- vector(length=dim(seedling$surv)[1])
 sprouted <- rep(0,length(include))
 
 for (i in 1:dim(seedling$surv)[1]){
@@ -51,6 +51,8 @@ for(i in 1:nseedlings){
   rcd[i] <- rcd.raw[i,first.sprout[i]]
 }
 
+
+
 rcd <- (rcd - mean(rcd,na.rm=TRUE)) / sd(rcd,na.rm=TRUE)
 
 #Browse - simplify to presence/absence for now
@@ -70,6 +72,17 @@ edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
 harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
+#Competition
+comp.raw <- seedling$comp.data[,1,]
+comp.raw[which(is.na(comp.raw),arr.ind=TRUE)] <- 0
+
+comp <- vector(length=nseedlings)
+for (i in 1:nseedlings){
+  comp[i] <- comp.raw[seed.plotcode[i],(first.sprout[i]-1)]
+}
+
+comp <- (comp - mean(comp,na.rm=TRUE)) / sd(comp,na.rm=TRUE)
+
 #Site level variables
 nsites <- 15
 
@@ -83,6 +96,7 @@ jags.data <- c('sprouted','nseedlings','nplots','nsites'
                ,'species'
                ,'rcd'
                ,'browse'
+               ,'comp'
                #plot covariates
                #,'aspect'
                ,'edge','harvest','shelter'
@@ -100,7 +114,7 @@ modFile <- 'models/model_seedling_sprout.R'
 
 params <- c('grand.mean','site.sd','plot.sd'
             ,'b.rcd'
-            #,'b.aspect'
+            ,'b.comp'
             ,'b.browse'
             ,'b.species'
             ,'b.edge','b.harvest','b.shelter'

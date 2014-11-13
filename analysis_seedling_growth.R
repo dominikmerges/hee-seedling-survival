@@ -99,6 +99,10 @@ comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 #Site level variables
 nsites <- 15
 
+#Year index
+
+year <- matrix(c(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1),byrow=T,nrow=4)
+
 #Index for posterior predictive check
 cucount = matrix(NA, nseedlings, 4)
 index=1
@@ -112,7 +116,7 @@ for(i in 1:nseedlings){
 
 #Bundle data for JAGS
 
-jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'
+jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'year'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                ,'rcd','browse','species','is.sprout'
                ,'aspect'
@@ -130,7 +134,9 @@ modFile <- 'models/model_seedling_growth.R'
 
 #Parameters to save
 
-params <- c('site.sd','plot.sd','ind.sd','grand.mean'
+params <- c('site.sd','plot.sd','seed.sd','obs.sd','grand.mean'
+            #,'b.y12','b.y13','b.y14'
+            #,'diff.13.12','diff.14.13','diff.14.12'
             ,'b.browse'
             ,'b.comp'
             ,'b.aspect'
@@ -148,7 +154,9 @@ params <- c('site.sd','plot.sd','ind.sd','grand.mean'
 library(jagsUI)
 
 growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=8000,n.burnin=5000,n.thin=2,parallel=TRUE)
+                    n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+
+growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
 pp.check(growth.output,'fit','fit.new')
 

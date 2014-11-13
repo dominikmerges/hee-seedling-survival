@@ -75,6 +75,21 @@ for (i in 1:nsites){
 #Stick in mean values
 pellet[,1] <- pelmean
 
+#Year
+year <- matrix(c(1,1,0,0,0,0,0,0,
+                 0,0,1,1,0,0,0,0,
+                 0,0,0,0,1,1,0,0,
+                 0,0,0,0,0,0,1,1),byrow=T,nrow=4)
+
+#Cumulative sample count index
+cucount = matrix(NA, nseedlings, 8)
+index=1
+for(i in 1:nseedlings){
+  for(j in 1:nsamples[i]){
+    cucount[i,j] = index
+    index = index+1
+  }}
+
 ##############################################
 #Does not work in model right now
 
@@ -89,8 +104,8 @@ season <- c(1,1,0,1,0,1,0,1)
 
 #Bundle data for JAGS
 
-jags.data <- c('browse','nseedlings','nplots','nsites','nsamples'
-               ,'seed.plotcode','seed.sitecode'
+jags.data <- c('browse','nseedlings','nplots','nsites','nsamples','year'
+               ,'seed.plotcode','seed.sitecode','plot.sitecode'
                #seedling covariates
                ,'rcd'
                ,'species'
@@ -98,10 +113,11 @@ jags.data <- c('browse','nseedlings','nplots','nsites','nsamples'
                ,'edge','harvest','shelter'
                ,'comp'
                ,'exclude'
+               ,'cucount'
                #site covariates
-               ,'pellet'
-               ,'season'
-               ,'pindex'
+               #,'pellet'
+               #,'season'
+               #,'pindex'
 )
 
 ################################
@@ -115,13 +131,17 @@ modFile <- 'models/model_browse.R'
 #Parameters to save
 
 params <- c('site.sd','plot.sd'
+            ,'seed.sd'
+            #,'b.y12','b.y13','b.y14'
+            #,'diff.13.12','diff.14.13','diff.14.12'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
             ,'b.exclude'
             ,'b.species'
             ,'b.rcd'
-            ,'b.pellet'
-            ,'b.season'
+            ,'fit','fit.new'
+            #,'b.pellet'
+            #,'b.season'
 )
 
 ################################
@@ -137,8 +157,8 @@ inits <- function(){
 require(jagsUI)
 
 browse.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
-                      n.chains=3,n.iter=5000,n.burnin=3000,n.thin=10,parallel=TRUE)
+                      n.chains=3,n.iter=2000,n.burnin=1000,n.thin=5,parallel=TRUE)
 
-browse.output <- update(browse.output,n.thin=10,n.iter=2000)
+browse.output <- update(browse.output,n.thin=10,n.iter=4000)
 
 save(browse.output,file="output/browse_output.Rda")

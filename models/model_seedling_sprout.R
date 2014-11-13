@@ -23,6 +23,7 @@ model {
                       + b.species*species[i]
                       + b.rcd*rcd[i]
                       + b.browse*browse[i]
+                      + b.comp*comp[i]
       
       res[i] <- abs(sprouted[i] - psi[i])
       sprouted.new[i] ~ dbern(psi[i])
@@ -44,7 +45,7 @@ model {
   b.edge ~ dnorm(0,0.01)
   b.harvest ~ dnorm(0,0.01)
   b.shelter ~ dnorm(0,0.01)
-  #b.aspect ~ dnorm(0,0.01)
+  b.comp ~ dnorm(0,0.01)
   
   b.species ~ dnorm(0,0.01)
   b.rcd ~ dnorm(0,0.01)

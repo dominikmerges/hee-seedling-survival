@@ -88,6 +88,12 @@ elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 #initial,oct11,may12,oct12,may13,oct13,may14,oct14
 season <- c(1,1,0,1,0,1,0,1)
 
+#Year
+year <- matrix(c(1,1,0,0,0,0,0,0,
+                 0,0,1,1,0,0,0,0,
+                 0,0,0,0,1,1,0,0,
+                 0,0,0,0,0,0,1,1),byrow=T,nrow=4)
+
 #Sample index for posterior predictive check
 cucount = matrix(NA, nseedlings, 8)
 index=1
@@ -122,11 +128,12 @@ modFile <- 'models/model_seedling_survival.R'
 
 #Parameters to save
 
-params <- c('site.sd','plot.sd','grand.mean'
+params <- c('site.sd','plot.sd','seed.sd','grand.mean'
             ,'b.browse'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
-            ,'b.aspect','b.elapsed'
+            ,'b.aspect'
+            #,'b.elapsed'
             ,'b.species','b.rcd'
             ,'b.browse','b.season','b.sprout'
             ,'fit','fit.new'
@@ -140,6 +147,8 @@ library(jagsUI)
 
 surv.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
+
+surv.output <- update(surv.output,n.iter=5000,n.thin=10)
 
 save(surv.output,file='output/surv_output.Rda')
 
