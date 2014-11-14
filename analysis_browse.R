@@ -43,6 +43,26 @@ for (i in 1:dim(surv)[1]){
 rcd.raw[,8] <- rcd.raw[,7]
 rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
 
+#Format height data
+ht.raw <- as.matrix(cbind(seedling$height[,1],seedling$height[,1],seedling$height[,2],seedling$height[,2],seedling$height[,3],
+                           seedling$height[,3],seedling$height[,4],seedling$height[,4]))
+ht.raw <- ht.raw[keep,]
+ht.raw[is.na(ht.raw[,1])&age==1,1] <- mean(ht.raw[age==1,1],na.rm=TRUE)
+ht.raw[is.na(ht.raw[,1])&age==0,1] <- mean(ht.raw[age==0,1],na.rm=TRUE)
+
+for (i in 1:dim(surv)[1]){
+  for (j in 2:8){
+    if(!is.na(surv[i,j])){
+      if(is.na(ht.raw[i,(j-1)])){
+        ht.raw[i,(j-1)] <- ht.raw[i,(j-2)]  
+      }}}}
+ht.raw[,8] <- rcd.raw[,7]
+ht <- (ht.raw - mean(ht.raw,na.rm=TRUE)) / sd(ht.raw,na.rm=TRUE)
+
+ht2.raw <- (ht.raw - mean(ht.raw,na.rm=TRUE))^2
+
+ht2 <- (ht2.raw-mean(ht2.raw,na.rm=TRUE))/sd(ht2.raw,na.rm=TRUE)
+
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
 
@@ -107,7 +127,8 @@ season <- c(1,1,0,1,0,1,0,1)
 jags.data <- c('browse','nseedlings','nplots','nsites','nsamples','year'
                ,'seed.plotcode','seed.sitecode','plot.sitecode'
                #seedling covariates
-               ,'rcd'
+               #,'rcd'
+               ,'ht','ht2'
                ,'species'
                #plot covariates
                ,'edge','harvest','shelter'
@@ -138,7 +159,8 @@ params <- c('site.sd','plot.sd'
             ,'b.edge','b.harvest','b.shelter'
             ,'b.exclude'
             ,'b.species'
-            ,'b.rcd'
+            #,'b.rcd'
+            ,'b.ht','b.ht2'
             ,'fit','fit.new'
             #,'b.pellet'
             #,'b.season'
@@ -157,7 +179,7 @@ inits <- function(){
 require(jagsUI)
 
 browse.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
-                      n.chains=3,n.iter=2000,n.burnin=1000,n.thin=5,parallel=TRUE)
+                      n.chains=3,n.iter=1000,n.burnin=500,n.thin=5,parallel=TRUE)
 
 browse.output <- update(browse.output,n.thin=10,n.iter=4000)
 

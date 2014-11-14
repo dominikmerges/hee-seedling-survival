@@ -27,7 +27,8 @@ model {
       #You can subset though? Strange.
       mu[i,j] <- seed.mean[i] 
               + b.comp*comp[seed.plotcode[i],j]
-              + b.rcd*rcd[i,j]
+              #+ b.rcd*rcd[i,j]
+              + b.ht*ht[i,j] + b.ht2*ht2[i,j]
     
       logit(Q[i,j,1]) <- tau[1,j] - mu[i,j]
       p[i,j,1] <- Q[i,j,1]
@@ -84,7 +85,9 @@ model {
   b.harvest ~ dnorm(0,0.01)
   b.shelter ~ dnorm(0,0.01)
   b.species ~ dnorm(0,0.01)
-  b.rcd ~ dnorm(0,0.01)
+  #b.rcd ~ dnorm(0,0.01)
+  b.ht ~ dnorm(0,0.01)
+  b.ht2 ~ dnorm(0,0.01)
   b.comp ~ dnorm(0,0.01)
   #b.season ~ dnorm(0,0.01)
   b.exclude ~ dnorm(0,0.01)
