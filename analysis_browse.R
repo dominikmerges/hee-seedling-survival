@@ -83,6 +83,10 @@ comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 
 #Site level variables
 nsites <- 15
+#elapsed.raw <- as.matrix(seedling$elapsed)
+#elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
+elapsed.raw <- c(1,1,2,2,3,3,4,4)
+elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
 #Pellet Counts
 pellet <- as.matrix(read.csv('data/pellet.csv',header=TRUE))
@@ -135,6 +139,7 @@ jags.data <- c('browse','nseedlings','nplots','nsites','nsamples','year'
                ,'comp'
                ,'exclude'
                ,'cucount'
+               ,'elapsed'
                #site covariates
                #,'pellet'
                #,'season'
@@ -161,6 +166,7 @@ params <- c('site.sd','plot.sd'
             ,'b.species'
             #,'b.rcd'
             ,'b.ht','b.ht2'
+            ,'b.time'
             ,'fit','fit.new'
             #,'b.pellet'
             #,'b.season'
@@ -184,3 +190,35 @@ browse.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model
 browse.output <- update(browse.output,n.thin=10,n.iter=4000)
 
 save(browse.output,file="output/browse_output.Rda")
+
+#############################################################
+
+#Switch to only deer
+
+#Browse - simplify to presence/absence for now
+browse <- seedling$browsedeer[keep,]
+#Final response variable (all browse events)
+browse <- browse + 1
+
+browsedeer.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
+                      n.chains=3,n.iter=6000,n.burnin=4000,n.thin=10,parallel=TRUE)
+browsedeer.output <- update(browse.output,n.thin=10,n.iter=4000)
+save(browsedeer.output,file="output/browsedeer_output.Rda")
+
+#############################################################
+
+#Switch to only rabbits
+
+#Browse - simplify to presence/absence for now
+browse <- seedling$browseother[keep,]
+#Final response variable (all browse events)
+browse <- browse + 1
+
+browseother.output <- jags(data=jags.data,inits=inits,parameters.to.save=params,model.file=modFile,
+                          n.chains=3,n.iter=6000,n.burnin=4000,n.thin=10,parallel=TRUE)
+browseother.output <- update(browse.output,n.thin=10,n.iter=4000)
+save(browseother.output,file="output/browseother_output.Rda")
+
+######################################
+##Current thoughts: no time effect, but harvest is important for rabbits??
+##Add interaction term, maybe, and run longer.

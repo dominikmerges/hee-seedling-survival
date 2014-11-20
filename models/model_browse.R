@@ -29,6 +29,7 @@ model {
               + b.comp*comp[seed.plotcode[i],j]
               #+ b.rcd*rcd[i,j]
               + b.ht*ht[i,j] + b.ht2*ht2[i,j]
+              + b.time*elapsed[j]
     
       logit(Q[i,j,1]) <- tau[1,j] - mu[i,j]
       p[i,j,1] <- Q[i,j,1]
@@ -91,6 +92,7 @@ model {
   b.comp ~ dnorm(0,0.01)
   #b.season ~ dnorm(0,0.01)
   b.exclude ~ dnorm(0,0.01)
+  b.time ~ dnorm(0,0.01)
 
   
 }

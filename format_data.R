@@ -107,7 +107,8 @@ for(i in 1:length(species)){
 initialhtZ[which(is.na(initialhtZ),arr.ind=TRUE)] <- 0
 
 
-seedling.data <- data.frame(siteid=seed.siteid,plotid=seed.plotid,pos=raw$Pos,species,age=raw$Age,initialhtZ=initialhtZ)
+seedling.data <- data.frame(siteid=seed.siteid,plotid=seed.plotid,pos=raw$Pos,species,age=raw$Age,initialhtZ=initialhtZ,
+                            initialht=raw$Ht)
 
 #Seedling survival matrix
 
