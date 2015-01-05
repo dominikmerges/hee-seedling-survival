@@ -47,6 +47,7 @@ model {
                       #+ b.edge_comp*edge[seed.plotcode[i]]*comp[seed.plotcode[i],j]
                       #+ b.shelter_comp*shelter[seed.plotcode[i]]*comp[seed.plotcode[i],j]
                       #+ b.browse_comp*browse[i,j-1]*comp[seed.plotcode[i],j]
+                      #+ b.sprout_time*is.sprout[i,j-1]*sprout.time[i,j-1]
                       
       
       res[cucount[i,j]] <- abs(surv[i,j] - psi[i,j])
@@ -58,6 +59,10 @@ model {
   
   fit <- sum(res[])
   fit.new <- sum(res.new[])
+  
+  b.edge_harvest <- b.edge - b.harvest
+  b.edge_shelter <- b.edge - b.shelter
+  b.shelter_harvest <- b.shelter - b.harvest
   
   #Priors
   
@@ -74,6 +79,7 @@ model {
   b.edge ~ dnorm(0,0.01)
   b.harvest ~ dnorm(0,0.01)
   b.shelter ~ dnorm(0,0.01)
+  
   b.comp ~ dnorm(0,0.01)
   b.aspect ~ dnorm(0,0.01)
   b.elapsed ~ dnorm(0,0.01)  
@@ -95,5 +101,6 @@ model {
   #b.edge_comp ~ dnorm(0,0.01)
   #b.shelter_comp ~ dnorm(0,0.01)
   #b.browse_comp ~ dnorm(0,0.01)
+  #b.sprout_time ~ dnorm(0,0.01)
   
 }

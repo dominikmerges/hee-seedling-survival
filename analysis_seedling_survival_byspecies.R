@@ -58,6 +58,19 @@ for (i in 1:dim(sprout.raw)[1]){
 }
 is.sprout <- sprout.raw
 
+
+sprout.time <- array(NA,dim=dim(is.sprout))
+for(i in 1:dim(sprout.time)[1]){
+  
+  if(is.sprout[i,1]==1){sprout.time[i,1]=1}else{sprout.time[i,1]=0}
+  
+  for (j in 2:dim(sprout.time)[2]){
+    sprout.time[i,j] <- sum(is.sprout[i,1:j]) 
+  }
+}
+
+
+
 #Browse quality control
 for (i in 1:nseedlings){
   for (j in 2:nsamples[i]){
@@ -156,7 +169,7 @@ for(i in 1:nseedlings){
 jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               ,'browse','is.sprout'
+               ,'browse','is.sprout'#,'sprout.time'
                #plot covariates
                ,'edge','harvest','shelter'
                ,'aspect'
@@ -183,6 +196,7 @@ params <- c('site.sd','plot.sd'
             ,'b.browse'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
+            ,'b.edge_harvest','b.edge_shelter','b.shelter_harvest'
             ,'b.aspect'
             ,'b.elapsed'
             ,'b.rcd'
@@ -200,6 +214,7 @@ params <- c('site.sd','plot.sd'
             #,'b.edge_comp'
             #,'b.shelter_comp'
             #,'b.browse_comp'
+            #,'b.sprout_time'
   )
 
 ################################
@@ -218,7 +233,7 @@ save(survbo.output,file='output/survbo_output.Rda')
 
 ####################################
 
-survwo.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+survwo2.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                       n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
 
 survwo.output <- update(survwo.output,n.iter=2000,n.thin=5)
