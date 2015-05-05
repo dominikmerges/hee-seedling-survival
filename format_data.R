@@ -41,6 +41,7 @@ distance2Z <- as.numeric(scale((coords[,4] - mean(coords[,4],na.rm=TRUE))^2))
 #SW = 1 NE = 0
 aspect <- as.numeric(coords[,5]=="SW")
 canopy <- as.numeric(scale(comp$DensMean[1:54]))
+canopy2 <- comp$DensMean[1:54]/100
 
 #Generate competition PCA
 
@@ -71,7 +72,7 @@ for (i in 1:4){
   index2 = index2 + 2
 }
 
-plot.data <- data.frame(unit=plotunit,siteid=plot.siteid,plotid,code,herbivory,competition,distanceZ,distance2Z,aspect,canopy)
+plot.data <- data.frame(unit=plotunit,siteid=plot.siteid,plotid,code,herbivory,competition,distanceZ,distance2Z,aspect,canopy,canopy2)
 
 #Seedling info
 

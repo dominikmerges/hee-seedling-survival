@@ -111,47 +111,94 @@ for (i in 2:8){
   wo.se.ma[i] = sqrt((wo.surv.ma[i]*(1-wo.surv.ma[i]))/length(na.omit(wo.ma[,(i-1)])))
 }
 
-par(mfrow=c(2,1),
+par.default <- par()
+
+par(mfrow=c(1,2),
     oma = c(5,4,0,0) + 0.1,
     mar = c(1,0,1,1) + 0.1)
 
-plot(bo.surv.cl,type="o",lwd=3,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",col='red',main="Black Oak")
-#axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
-lines(bo.surv.eg,type="o",lwd=3,col='orange')
-lines(bo.surv.sh,type="o",lwd=3,col='blue')
-lines(bo.surv.ma,type="o",lwd=3,col='green')
+cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
+          rgb(red=241,green=194,blue=50, maxColorValue=255),
+          rgb(red=141,green=213,blue=18, maxColorValue=255),
+          rgb(red=75,green=142,blue=26, maxColorValue=255))
 
-for(i in 2:8){
-  segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col="red",lwd=2)
-  segments(x0=i,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i,y1=(bo.surv.eg[i]+bo.se.eg[i]),col="orange",lwd=2)
-  segments(x0=i,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i,y1=(bo.surv.sh[i]+bo.se.sh[i]),col="blue",lwd=2)
-  segments(x0=i,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i,y1=(bo.surv.ma[i]+bo.se.ma[i]),col="green",lwd=2)
-}
-
-legend(5,1,lwd=3,col=c('red','orange','blue','green'),
-       legend=c('Clearcut','Edge','Shelterwood','Matrix'))
-
-
-plot(wo.surv.cl,type="o",lwd=3,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",col='red',main="White Oak")
+plot(bo.surv.cl,type="o",lwd=3,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+     col=cols[1],main="Black Oak",pch=20,cex=1.5)
 axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
-lines(wo.surv.eg,type="o",lwd=3,col='orange')
-lines(wo.surv.sh,type="o",lwd=3,col='blue')
-lines(wo.surv.ma,type="o",lwd=3,col='green')
+lines(bo.surv.eg,type="o",lwd=3,col=cols[2],pch=20,cex=1.5)
+lines(bo.surv.sh,type="o",lwd=3,col=cols[3],pch=20,cex=1.5)
+lines(bo.surv.ma,type="o",lwd=3,col=cols[4],pch=20,cex=1.5)
+
+text(8.55,0.38,"A")
+segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=2)
+segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=2)
+segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=2)
+text(8.55,0.18,"B")
 
 for(i in 2:8){
-  segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col="red",lwd=2)
-  segments(x0=i,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i,y1=(wo.surv.eg[i]+wo.se.eg[i]),col="orange",lwd=2)
-  segments(x0=i,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i,y1=(wo.surv.sh[i]+wo.se.sh[i]),col="blue",lwd=2)
-  segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+bo.se.ma[i]),col="green",lwd=2)
+  segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[1],lwd=2)  
+  segments(x0=i-0.15,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i+0.15,y1=(bo.surv.cl[i]-bo.se.cl[i]),col=cols[1],lwd=1)
+  segments(x0=i-0.15,y0=(bo.surv.cl[i]+bo.se.cl[i]),x1=i+0.15,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[1],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[2],lwd=2)
+  segments(x0=i-0.15,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i+0.15,y1=(bo.surv.eg[i]-bo.se.eg[i]),col=cols[2],lwd=1)
+  segments(x0=i-0.15,y0=(bo.surv.eg[i]+bo.se.eg[i]),x1=i+0.15,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[2],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=2)
+  segments(x0=i-0.15,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i+0.15,y1=(bo.surv.sh[i]-bo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.15,y0=(bo.surv.sh[i]+bo.se.sh[i]),x1=i+0.15,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[4],lwd=2)
+  segments(x0=i-0.15,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i+0.15,y1=(bo.surv.ma[i]-bo.se.ma[i]),col=cols[4],lwd=1)
+  segments(x0=i-0.15,y0=(bo.surv.ma[i]+bo.se.ma[i]),x1=i+0.15,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[4],lwd=1)
+  
 }
+
+legend(5,1,lwd=3,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,
+       legend=c('Shelterwood','Forest','Edge','Clearcut'))
+
+
+##################################################################
+
+plot(wo.surv.cl,type="o",lwd=3,ylim=c(0,1),xaxt='n',yaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+     col=cols[1],main="White Oak",pch=20,cex=1.5)
+axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
+lines(wo.surv.eg,type="o",lwd=3,col=cols[2],pch=20,cex=1.5)
+lines(wo.surv.sh,type="o",lwd=3,col=cols[3],pch=20,cex=1.5)
+lines(wo.surv.ma,type="o",lwd=3,col=cols[4],pch=20,cex=1.5)
+
+text(8.55,0.42,"A")
+segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=2)
+segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=2)
+segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=2)
+
+for(i in 2:8){
+  segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[1],lwd=2)  
+  segments(x0=i-0.15,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i+0.15,y1=(wo.surv.cl[i]-wo.se.cl[i]),col=cols[1],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.cl[i]+wo.se.cl[i]),x1=i+0.15,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[1],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[2],lwd=2)
+  segments(x0=i-0.15,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i+0.15,y1=(wo.surv.eg[i]-wo.se.eg[i]),col=cols[2],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.eg[i]+wo.se.eg[i]),x1=i+0.15,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[2],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=2)
+  segments(x0=i-0.15,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i+0.15,y1=(wo.surv.sh[i]-wo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.sh[i]+wo.se.sh[i]),x1=i+0.15,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[4],lwd=2)
+  segments(x0=i-0.15,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]-wo.se.ma[i]),col=cols[4],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[4],lwd=1)
+  
+}
+
 
 
 
 title(xlab = "Time",
       ylab = "Proportion Surviving",
-      outer = TRUE, line = 3)
+      outer = TRUE, line = 2)
 
-par(mfrow=c(1,1))
+par(par.default)
 
 ##############################################################################
 
@@ -258,31 +305,38 @@ TukeyHSD(wo)
 
 ########################
 
-par(mfrow=c(2,1),
-    oma = c(5,4,0,0) + 0.1,
-    mar = c(1,0,1,1) + 0.1)
+#par(mfrow=c(2,1),
+#    oma = c(5,4,0,0) + 0.1,
+#    mar = c(1,0,1,1) + 0.1)
 
-barplot(dat.bo,col=c('red','orange','blue','green'),ylim=c(0,5.25),main="Black Oak")
+cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
+          rgb(red=241,green=194,blue=50, maxColorValue=255),
+          rgb(red=141,green=213,blue=18, maxColorValue=255),
+          rgb(red=75,green=142,blue=26, maxColorValue=255))
 
-structure = c(0.7,1.9,3.1,4.3)
-t = c('a','b','ab','ab')
+barplot(rev(dat.bo),col=rev(cols),ylim=c(0,7.75),main="Black Oak",
+        names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
+        ylab="Mean Annual Height Growth (cm)")
+
+structure = rev(c(0.7,1.9,3.1,4.3))
+t = rev(c('a','ab','a','b'))
 for (i in 1:4){
-  segments(x0=structure[i],y0=(dat.bo[i]-se.bo[i]),x1=structure[i],y1=(dat.bo[i]+se.bo[i]),lwd=2)
-  text(x=structure[i],y=(dat.bo[i]+se.bo[i]+0.2),labels=t[i])
+  segments(x0=structure[i],y0=(dat.bo[i]),x1=structure[i],y1=(dat.bo[i]+se.bo[i]),lwd=2)
+  segments(x0=structure[i]-0.2,y0=(dat.bo[i]+se.bo[i]),x1=structure[i]+0.2,y1=(dat.bo[i]+se.bo[i]),lwd=2)
+  
+  text(x=structure[i],y=(dat.bo[i]+se.bo[i]+0.4),labels=t[i])
 }
 
-barplot(dat.wo,col=c('red','orange','blue','green'),ylim=c(0,5.25),main="White Oak",
-        names=c('Clearcut','Edge','Shelter','Matrix'))
+barplot(rev(dat.wo),col=rev(cols),ylim=c(0,7.75),main="White Oak",
+        names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
+        ylab="Mean Annual Height Growth (cm)")
 
-structure = c(0.7,1.9,3.1,4.3)
-t = c('a','b','ab','ab')
+structure = rev(c(0.7,1.9,3.1,4.3))
+t = rev(c('a','ab','a','b'))
 for (i in 1:4){
-  segments(x0=structure[i],y0=(dat.wo[i]-se.wo[i]),x1=structure[i],y1=(dat.wo[i]+se.wo[i]),lwd=2)
-  text(x=structure[i],y=(dat.wo[i]+se.wo[i]+0.2),labels=t[i])
+  segments(x0=structure[i],y0=(dat.wo[i]),x1=structure[i],y1=(dat.wo[i]+se.wo[i]),lwd=2)
+  segments(x0=structure[i]-0.2,y0=(dat.wo[i]+se.wo[i]),x1=structure[i]+0.2,y1=(dat.wo[i]+se.wo[i]),lwd=2)
+  text(x=structure[i],y=(dat.wo[i]+se.wo[i]+0.4),labels=t[i])
 }
-
-title(xlab = "Treatment",
-      ylab = "Mean Annual Height Growth (cm)",
-      outer = TRUE, line = 3)
 
 par(mfrow=c(1,1))
