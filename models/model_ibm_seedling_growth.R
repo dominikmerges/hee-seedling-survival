@@ -15,9 +15,9 @@ model {
       mu[i,j] <- grand.mean + seed.mean[i] 
                       + b.browse*browse[i,j]
                       + b.light*canopy[seed.plotcode[i]]
-                      + b.sprout*is.sprout[i,j]
+                      #+ b.sprout*is.sprout[i,j]
                       + b.species*species[i]
-                      + b.height*st.height[i,j]
+                      #+ b.height*st.height[i,j]
                     
     }
   }
@@ -35,7 +35,7 @@ model {
   b.light ~ dnorm(0,0.01)    
   b.species ~ dnorm(0,0.01)
   b.browse ~ dnorm(0,0.01)
-  b.sprout ~ dnorm(0,0.01)
-  b.height ~ dnorm(0,0.01)
+  #b.sprout ~ dnorm(0,0.01)
+  #b.height ~ dnorm(0,0.01)
   
 }

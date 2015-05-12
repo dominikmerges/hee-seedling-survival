@@ -8,7 +8,7 @@ source('format_data.R')
 seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established"
-keep <- which(seedling$surv.sprout[,1]==1)
+keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$age==1)
 sprout.raw <- seedling$sprout[keep,]
 
 #Keep track of when seedlings became sprouts
@@ -39,6 +39,7 @@ keep2 <- which(end>0)
 growth <- seedling$htgrowth[keep,]
 growth <- growth[keep2,]
 nsamples <- end[keep2]
+age <- seedling$seedling.data$age[keep][keep2]
 
 st.height <- seedling$height[keep,]
 st.height <- st.height[keep2,][,1:4]
@@ -52,12 +53,22 @@ seed.plotcode <- seedling.covs$plotid
 species <- seedling.covs$species
 canopy <- seedling$plot.data$canopy2
 
+
+
+is.sprout <- sprout.raw[keep2,]
+
+keep3 <- which(rowSums(is.sprout)<1&age==1)
+
+growth <- growth[keep3,]
+
+nseedlings <- dim(growth)[1]
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
 browse <- browse[keep2,]
 browse <- as.matrix(cbind(browse[,1]+browse[,2],browse[,3]+browse[,4],
                           browse[,5]+browse[,6],browse[,7]+browse[,8]))
 browse[which(browse>1,arr.ind=TRUE)] = 1
+browse <- browse[keep3,]
 
 #Browse quality control
 for (i in 1:nseedlings){
@@ -66,7 +77,14 @@ for (i in 1:nseedlings){
       browse[i,j] <- 0
     }}}
 
-is.sprout <- sprout.raw[keep2,]
+#Seedling-level covariates
+
+seedling.covs <- seedling$seedling.data[keep,]
+seedling.covs <- seedling.covs[keep2,][keep3,]
+seed.sitecode <- seedling.covs$siteid
+seed.plotcode <- seedling.covs$plotid
+species <- seedling.covs$species
+canopy <- seedling$plot.data$canopy2
 
 #Format plot-level variables
 nplots <- 54
@@ -107,7 +125,7 @@ params <- c('seed.sd','obs.sd','grand.mean'
 library(jagsUI)
 
 ibm.growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                      n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+                      n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
 
 ibm.growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
