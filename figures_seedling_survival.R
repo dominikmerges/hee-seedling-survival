@@ -110,6 +110,98 @@ for (i in 2:8){
   wo.se.sh[i] = sqrt((wo.surv.sh[i]*(1-wo.surv.sh[i]))/length(na.omit(wo.sh[,(i-1)])))
   wo.se.ma[i] = sqrt((wo.surv.ma[i]*(1-wo.surv.ma[i]))/length(na.omit(wo.ma[,(i-1)])))
 }
+########################################
+##Paper figure code
+par.default <- par()
+
+png(filename='surv.png',type='cairo',units='in',
+    width=5.5,height=7,pointsize=12,res=96)
+par(mfrow=c(2,1),
+    oma = c(4,0,0,0) + 0.1,
+    mar = c(0,4,1,1) + 0.1)
+
+ltys = c(1,2,1,2)
+
+cols <- c('gray','gray','black','black')
+
+plot(bo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+     col=cols[1],main="Black Oak",pch=20,cex=1.5)
+
+
+
+text(8.55,0.38,"A")
+segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=2)
+segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=2)
+segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=2)
+text(8.55,0.18,"B")
+
+for(i in 2:8){
+  segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)  
+  segments(x0=i-0.1,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]-bo.se.cl[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.cl[i]+bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]-bo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.eg[i]+bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]-bo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.sh[i]+bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]-bo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.ma[i]+bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[3],lwd=1)
+  
+}
+
+lines(bo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(bo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+
+legend(5.5,1,lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
+       legend=c('Shelterwood','Forest','Edge','Clearcut'))
+
+plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+     col=cols[1],main="White Oak",pch=20,cex=1.5)
+axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
+
+text(8.55,0.42,"A")
+segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=2)
+segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=2)
+segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=2)
+
+for(i in 2:8){
+  segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)  
+  segments(x0=i-0.1,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]-wo.se.cl[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.cl[i]+wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]-wo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.eg[i]+wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]-wo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.sh[i]+wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
+  
+  segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]-wo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.15,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
+  
+}
+
+lines(wo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(wo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(wo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(wo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+
+mtext('Time',side=1,line=2.5,outer=TRUE, at=c(0.55))
+dev.off()
+par(par.default)
+
+
+########################################
+##Presentation figure code
 
 par.default <- par()
 
@@ -305,17 +397,19 @@ TukeyHSD(wo)
 
 ########################
 
-#par(mfrow=c(2,1),
-#    oma = c(5,4,0,0) + 0.1,
-#    mar = c(1,0,1,1) + 0.1)
+par(mfrow=c(2,1),
+    oma = c(4,0,0,0) + 0.1,
+    mar = c(1,4,1,1) + 0.1)
 
 cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
           rgb(red=241,green=194,blue=50, maxColorValue=255),
           rgb(red=141,green=213,blue=18, maxColorValue=255),
           rgb(red=75,green=142,blue=26, maxColorValue=255))
 
+cols <- c('white','gray80','gray30','black')
+
 barplot(rev(dat.bo),col=rev(cols),ylim=c(0,7.75),main="Black Oak",
-        names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
+        #names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
         ylab="Mean Annual Height Growth (cm)")
 
 structure = rev(c(0.7,1.9,3.1,4.3))
