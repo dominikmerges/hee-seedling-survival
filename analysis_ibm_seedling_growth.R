@@ -130,3 +130,88 @@ ibm.growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=mo
 ibm.growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
 save(growth.output,file="output/ibm_growth_output.Rda")
+
+#################################
+
+#First 2 years only
+
+for (i in 1:length(nsamples)){
+  if(nsamples[i]>2){nsamples[i] = 2}
+}
+
+library(jagsUI)
+
+ibm.growth12.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                          n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
+
+ibm.growth12.output <- update(growth.output,n.iter=15000,n.thin=10)
+
+save(ibm.growth12.output,file="output/ibm_growth12_output.Rda")
+
+#Equation
+
+#2.213 + rnorm(1,0,1.044) + -4.332*b.browse + -0.559 * b.shade + 1.030 * b.wo + rnorm(1,0,5.269)
+
+#Outliers (maybe there are none; no seedlings grew > 30 cm in a single period)
+which(na.omit(as.vector(growth[seedling.covs$siteid%in%c(1,2,5,6,9,10),1:2]))>30)
+length(na.omit(as.vector(growth[seedling.covs$siteid%in%c(1,2,5,6,9,10),1:2])))
+
+#Test distribution
+
+simgrowth <- matrix(NA,nrow=nrow(growth),ncol=2)
+for (i in 1:dim(growth)[1]){
+  ymean <- rnorm(1,0,1.044)
+  for (j in 1:nsamples[i]){
+    simgrowth[i,j] <- 2.213 + ymean - 4.332*browse[i,j] - 0.559 * canopy[seed.plotcode[i]] + 1.030 * species[i] + rnorm(1,0,5.269)
+  }
+}
+
+#Actual growth
+par(mfrow=c(2,1))
+hist(growth[,1:2][growth>-10],freq=F,xlim=c(-10,30),ylim=c(0,0.21),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
+hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-10,30),ylim=c(0,0.21),
+     xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
+########################################################################################
+
+#Second 2 years only
+
+keep5 <- which(!is.na(growth[,3]))
+growth <- growth[keep5,3:4]
+browse <- browse[keep5,3:4]
+seed.plotcode <- seed.plotcode[keep5]
+species <- species[keep5]
+nseedlings <- length(species)
+browse[24,2] <- 0
+browse[51,1] <- 0
+
+nsamples <- vector(length=length(species))
+for(i in 1:length(species)){
+  if(is.na(growth[i,2])){
+    nsamples[i] <- 1
+  } else {nsamples[i] <- 2}
+}
+
+ibm.growth34.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                            n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
+
+ibm.growth34.output <- update(growth.output,n.iter=15000,n.thin=10)
+
+save(ibm.growth34.output,file="output/ibm_growth34_output.Rda")
+
+simgrowth <- matrix(NA,nrow=nrow(growth),ncol=2)
+for (i in 1:dim(growth)[1]){
+  ymean <- rnorm(1,0,6.28)
+  for (j in 1:nsamples[i]){
+    simgrowth[i,j] <- 14.56 + ymean - 7.185*browse[i,j] - -16.46 * canopy[seed.plotcode[i]] + 5.67 * species[i] + rnorm(1,0,15.39)
+  }
+}
+
+#Actual growth
+par(mfrow=c(2,1))
+hist(growth[,1:2][growth>-10],freq=F,xlim=c(-10,120),ylim=c(0,0.05),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
+hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-10,120),ylim=c(0,0.05),
+     xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
