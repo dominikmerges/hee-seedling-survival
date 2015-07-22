@@ -131,6 +131,23 @@ ibm.growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
 save(growth.output,file="output/ibm_growth_output.Rda")
 
+##########################
+
+#Experimenting with neglog transformation
+
+neglog <- function(x){
+  
+  return (sign(x)*log(abs(x)+1))
+  
+}
+
+inv.neglog <- function(x){
+  if(is.na(x)){return(NA)}
+  if(x <= 0){
+    return(1 - exp(-x))
+  } else {return(exp(x)-1)}
+}
+
 #################################
 
 #First 2 years only
@@ -141,37 +158,36 @@ for (i in 1:length(nsamples)){
 
 library(jagsUI)
 
-ibm.growth12.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                          n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
+growth <- apply(growth,c(1,2),neglog)
 
-ibm.growth12.output <- update(growth.output,n.iter=15000,n.thin=10)
+ibm.growth12.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                            n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
 
 save(ibm.growth12.output,file="output/ibm_growth12_output.Rda")
 
-#Equation
-
-#2.213 + rnorm(1,0,1.044) + -4.332*b.browse + -0.559 * b.shade + 1.030 * b.wo + rnorm(1,0,5.269)
-
-#Outliers (maybe there are none; no seedlings grew > 30 cm in a single period)
-which(na.omit(as.vector(growth[seedling.covs$siteid%in%c(1,2,5,6,9,10),1:2]))>30)
-length(na.omit(as.vector(growth[seedling.covs$siteid%in%c(1,2,5,6,9,10),1:2])))
-
-#Test distribution
-
 simgrowth <- matrix(NA,nrow=nrow(growth),ncol=2)
 for (i in 1:dim(growth)[1]){
-  ymean <- rnorm(1,0,1.044)
+  ymean <- rnorm(1,0,0.157)
   for (j in 1:nsamples[i]){
-    simgrowth[i,j] <- 2.213 + ymean - 4.332*browse[i,j] - 0.559 * canopy[seed.plotcode[i]] + 1.030 * species[i] + rnorm(1,0,5.269)
+    simgrowth[i,j] <- 0.991 + ymean - 0.871*browse[i,j] + -0.238 * canopy[seed.plotcode[i]] + 0.085 * species[i] + rnorm(1,0,1.016)
   }
 }
 
-#Actual growth
 par(mfrow=c(2,1))
-hist(growth[,1:2][growth>-10],freq=F,xlim=c(-10,30),ylim=c(0,0.21),
+hist(growth[,1:2][growth>-10],freq=F,xlim=c(-4,4.5),ylim=c(0,0.50),
      xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
-hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-10,30),ylim=c(0,0.21),
+hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-4,4.5),ylim=c(0,0.50),
      xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
+act.growth <- apply(growth,c(1,2),inv.neglog)
+act.sim <- apply(simgrowth,c(1,2),inv.neglog)
+
+par(mfrow=c(2,1))
+hist(act.growth[,1:2][act.growth[,1:2]>-10],freq=F,xlim=c(-10,50),ylim=c(0,0.2),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
+hist(act.sim[,1:2][act.sim>-10&act.sim<30],freq=F,xlim=c(-10,50),ylim=c(0,0.2),
+     xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
 
 ########################################################################################
 
@@ -186,6 +202,7 @@ nseedlings <- length(species)
 browse[24,2] <- 0
 browse[51,1] <- 0
 
+
 nsamples <- vector(length=length(species))
 for(i in 1:length(species)){
   if(is.na(growth[i,2])){
@@ -193,25 +210,41 @@ for(i in 1:length(species)){
   } else {nsamples[i] <- 2}
 }
 
+growth <- apply(growth,c(1,2),neglog)
+
 ibm.growth34.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                             n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=FALSE)
-
-ibm.growth34.output <- update(growth.output,n.iter=15000,n.thin=10)
 
 save(ibm.growth34.output,file="output/ibm_growth34_output.Rda")
 
 simgrowth <- matrix(NA,nrow=nrow(growth),ncol=2)
 for (i in 1:dim(growth)[1]){
-  ymean <- rnorm(1,0,6.28)
+  ymean <- rnorm(1,0,0.199)
   for (j in 1:nsamples[i]){
-    simgrowth[i,j] <- 14.56 + ymean - 7.185*browse[i,j] - -16.46 * canopy[seed.plotcode[i]] + 5.67 * species[i] + rnorm(1,0,15.39)
+    simgrowth[i,j] <- 2.091 + ymean - 0.976*browse[i,j] + -1.733 * canopy[seed.plotcode[i]] + 0.468 * species[i] + rnorm(1,0,1.468)
   }
 }
 
-#Actual growth
 par(mfrow=c(2,1))
-hist(growth[,1:2][growth>-10],freq=F,xlim=c(-10,120),ylim=c(0,0.05),
+hist(growth[,1:2][growth>-10],freq=F,xlim=c(-4,8),ylim=c(0,0.30),
      xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
-hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-10,120),ylim=c(0,0.05),
+hist(simgrowth[,1:2][simgrowth>-10],freq=F,xlim=c(-4,8),ylim=c(0,0.30),
      xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
+inv.neglog <- function(x){
+  if(is.na(x)){return(NA)}
+  if(x <= 0){
+    return(1 - exp(-x))
+  } else {return(exp(x)-1)}
+}
+
+act.growth <- apply(growth,c(1,2),inv.neglog)
+act.sim <- apply(simgrowth,c(1,2),inv.neglog)
+
+par(mfrow=c(2,1))
+hist(act.growth[,1:2][act.growth>-10],freq=F,xlim=c(-10,150),ylim=c(0,0.10),
+     xlab="Yearly Growth (cm)",main="Actual Seedling Growth",col='gray',breaks=15)
+hist(act.sim[,1:2][act.sim>-10&act.sim<150],freq=F,xlim=c(-10,150),ylim=c(0,0.10),
+     xlab="Yearly Growth (cm)",main="Sim Seedling Growth",col='red',breaks=15,add=F)
+
 

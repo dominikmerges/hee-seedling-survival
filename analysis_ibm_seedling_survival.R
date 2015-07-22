@@ -102,7 +102,7 @@ params <- c(#'seed.sd'
             ,'b.species','b.sprout'
             #,'b.browse'
             ,'b.shade'
-            ,'b.height'
+            #,'b.height'
             ,'b.age'
   )
 
@@ -119,4 +119,41 @@ surv.ibm.output <- update(surv.output,n.iter=5000,n.thin=10)
 
 save(surv.ibm.output,file='output/surv_ibm_output.Rda')
 
+############
 
+#First 2 years only
+
+for (i in 1:length(nsamples)){
+  if(nsamples[i]>3){nsamples[i] = 3}
+}
+
+surv12.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                        n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
+
+save(surv12.ibm.output,file='output/surv12_ibm_output.Rda')
+
+#equation -0.531 + 0.197 * species + 0.528 * canopy + 0.440*age
+
+#####################
+
+#Years 3-4
+
+keep2 <- which(surv[,3]==1)
+
+surv <- surv[keep2,3:5]
+species <- species[keep2]
+nseedlings <- length(species)
+age <- age[keep2,3:4]
+seed.plotcode <- seed.plotcode[keep2]
+
+nsamples <- numeric(dim(surv)[1])
+for (i in 1:dim(surv)[1]){
+  nsamples[i] <- length(na.omit(surv[i,]))
+}
+
+surv34.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                          n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
+
+save(surv34.ibm.output,file='output/surv34_ibm_output.Rda')
+
+#equation 2.596 - 0.049 * species - 0.733 * canopy + -0.01 * age
