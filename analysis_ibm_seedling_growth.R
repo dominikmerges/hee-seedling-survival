@@ -89,6 +89,25 @@ canopy <- seedling$plot.data$canopy2
 #Format plot-level variables
 nplots <- 54
 
+##########################
+
+#Experimenting with neglog transformation
+
+neglog <- function(x){
+  
+  return (sign(x)*log(abs(x)+1))
+  
+}
+
+inv.neglog <- function(x){
+  if(is.na(x)){return(NA)}
+  if(x <= 0){
+    return(1 - exp(-x))
+  } else {return(exp(x)-1)}
+}
+
+growth <- apply(growth,c(1,2),neglog)
+
 
 ###############################
 
@@ -129,24 +148,9 @@ ibm.growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=mo
 
 ibm.growth.output <- update(growth.output,n.iter=15000,n.thin=10)
 
-save(growth.output,file="output/ibm_growth_output.Rda")
+save(ibm.growth.output,file="output/ibm_growth_output.Rda")
 
-##########################
-
-#Experimenting with neglog transformation
-
-neglog <- function(x){
-  
-  return (sign(x)*log(abs(x)+1))
-  
-}
-
-inv.neglog <- function(x){
-  if(is.na(x)){return(NA)}
-  if(x <= 0){
-    return(1 - exp(-x))
-  } else {return(exp(x)-1)}
-}
+#equation 1.24 + rnorm(1,0,0.248) - 0.94 * browse - 0.488 * canopy + 0.116 * species + rnorm(1,0,1.188)
 
 #################################
 

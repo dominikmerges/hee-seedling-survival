@@ -115,9 +115,9 @@ library(jagsUI)
 surv.ibm.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=FALSE)
 
-surv.ibm.output <- update(surv.output,n.iter=5000,n.thin=10)
-
 save(surv.ibm.output,file='output/surv_ibm_output.Rda')
+
+#equation -0.600 + 0.101 * species + 0. 366 * canopy + 0.576 * age
 
 ############
 
