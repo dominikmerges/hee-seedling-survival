@@ -114,8 +114,13 @@ for (i in 2:8){
 ##Paper figure code
 par.default <- par()
 
-png(filename='surv.png',type='cairo',units='in',
-    width=5.5,height=7,pointsize=12,res=96)
+#png(filename='surv.png',type='cairo',units='in',
+#    width=5.5,height=7,pointsize=12,res=96)
+
+#Output figure as TIFF file
+tiff(filename="Fig1_Surv.tiff",width=3.9,height=5,units="in",res=400, pointsize=8,
+     compression = "lzw",type='cairo')
+
 par(mfrow=c(2,1),
     oma = c(4,0,0,0) + 0.1,
     mar = c(0,4,1,1) + 0.1)
@@ -160,7 +165,7 @@ lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
 lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 legend(5.5,1,lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
-       legend=c('Shelterwood','Forest','Edge','Clearcut'))
+       legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'))
 
 plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
      col=cols[1],main="White Oak",pch=20,cex=1.5)
@@ -397,6 +402,10 @@ TukeyHSD(wo)
 
 ########################
 
+#Output figure as TIFF file
+tiff(filename="Fig2_Growth.tiff",width=3.9,height=5,units="in",res=400, pointsize=8,
+     compression = "lzw",type='cairo')
+
 par(mfrow=c(2,1),
     oma = c(4,0,0,0) + 0.1,
     mar = c(1,4,1,1) + 0.1)
@@ -422,7 +431,7 @@ for (i in 1:4){
 }
 
 barplot(rev(dat.wo),col=rev(cols),ylim=c(0,7.75),main="White Oak",
-        names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
+        names=c('Forest','Shelter','Clear Edge','Clear Int'),xlab="Treatment",
         ylab="Mean Annual Height Growth (cm)")
 
 structure = rev(c(0.7,1.9,3.1,4.3))
@@ -434,3 +443,5 @@ for (i in 1:4){
 }
 
 par(mfrow=c(1,1))
+
+dev.off()
