@@ -124,7 +124,7 @@ tiff(filename="Fig1_Surv.tiff",width=3.9,height=5,units="in",res=400, pointsize=
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig4-1.pdf",width=4.2,height=5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig4-1.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 par(mfrow=c(2,1),
     oma = c(4,0,0,0) + 0.1,
@@ -170,7 +170,7 @@ lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
 lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 legend('topright',lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
-       legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'))
+       legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'),bty='n')
 
 plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
@@ -208,6 +208,8 @@ lines(wo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 mtext('Time',side=1,line=2.5,outer=TRUE, at=c(0.55))
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig4-1.pdf")
 par(par.default)
 
 
@@ -415,7 +417,7 @@ tiff(filename="Fig2_Growth.tiff",width=3.9,height=5,units="in",res=400, pointsiz
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-#pdf(file="../dissertation/figures/fig4-2.pdf",width=3.9,height=5,family="CM Roman",pointsize=9)
+pdf(file="../dissertation/figures/fig4-2.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 par(mar = c(4,4.5,0.5,2) + 0.1)
 par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
@@ -457,3 +459,5 @@ for (i in 1:4){
 par(mfrow=c(1,1))
 
 dev.off()
+Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+embed_fonts("../dissertation/figures/fig4-2.pdf")
