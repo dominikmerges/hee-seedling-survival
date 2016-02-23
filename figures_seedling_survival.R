@@ -124,7 +124,7 @@ tiff(filename="Fig1_Surv.tiff",width=3.9,height=5,units="in",res=400, pointsize=
 #library(extrafont)
 #font_install('fontcm')
 #loadfonts()
-pdf(file="../dissertation/figures/fig4-1.pdf",width=5,height=5,family="CM Roman",pointsize=10)
+#pdf(file="../dissertation/figures/fig4-1.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 par(mfrow=c(2,1),
     oma = c(4,0,0,0) + 0.1,
@@ -134,7 +134,7 @@ ltys = c(1,2,1,2)
 
 cols <- c('gray','gray','black','black')
 
-plot(bo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+plot(bo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'Black Oak',cex=1.3)
 
@@ -144,6 +144,11 @@ segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=2)
 segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=2)
 segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=2)
 text(8.55,0.18,"B")
+
+lines(bo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(bo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
   segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)  
@@ -164,15 +169,15 @@ for(i in 2:8){
   
 }
 
-lines(bo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(bo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+points(bo.surv.cl,col=cols[1],pch=20,cex=1.5)
+points(bo.surv.eg,col=cols[2],pch=20,cex=1.5)
+points(bo.surv.sh,col=cols[3],pch=20,cex=1.5)
+points(bo.surv.ma,col=cols[4],pch=20,cex=1.5)
 
 legend('topright',lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
-       legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'),bty='n')
+       legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'))
 
-plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="Proportion Surviving",xlim=c(1,8.5),
+plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'White Oak',cex=1.3)
 axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
@@ -181,6 +186,11 @@ text(8.55,0.42,"A")
 segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=2)
 segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=2)
 segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=2)
+
+lines(wo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(wo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(wo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(wo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
   segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)  
@@ -196,20 +206,21 @@ for(i in 2:8){
   segments(x0=i-0.1,y0=(wo.surv.sh[i]+wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
   
   segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.15,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]-wo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.15,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.15,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]-wo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
   
 }
 
-lines(wo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(wo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(wo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(wo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+lines(wo.surv.cl,col=cols[1],pch=20,cex=1.5)
+lines(wo.surv.eg,col=cols[2],pch=20,cex=1.5)
+lines(wo.surv.sh,col=cols[3],pch=20,cex=1.5)
+lines(wo.surv.ma,col=cols[4],pch=20,cex=1.5)
 
 mtext('Time',side=1,line=2.5,outer=TRUE, at=c(0.55))
+mtext('Proportion of Seedlings Surviving',side=2,line=-1.5,outer=TRUE)
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig4-1.pdf")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+#embed_fonts("../dissertation/figures/fig4-1.pdf")
 par(par.default)
 
 
@@ -431,7 +442,7 @@ cols <- c('white','gray80','gray30','black')
 
 barplot(rev(dat.bo),col=rev(cols),ylim=c(0,7.75),
         #names=c('Forest','Shelter','Edge','Clear'),xlab="Treatment",
-        ylab="Annual Height Growth (cm)")
+        ylab="")
 text(1,6.5,'Black Oak',cex=1.3)
 
 structure = rev(c(0.7,1.9,3.1,4.3))
@@ -445,7 +456,7 @@ for (i in 1:4){
 par(fig=c(0,1,0,0.55),new=TRUE)
 barplot(rev(dat.wo),col=rev(cols),ylim=c(0,7.75),
         names=c('Forest','Shelter','Clear Edge','Clear Int'),xlab="Treatment",
-        ylab="Annual Height Growth (cm)")
+        ylab="")
 text(1,6.5,'White Oak',cex=1.3)
 
 structure = rev(c(0.7,1.9,3.1,4.3))
@@ -455,9 +466,8 @@ for (i in 1:4){
   segments(x0=structure[i]-0.2,y0=(dat.wo[i]+se.wo[i]),x1=structure[i]+0.2,y1=(dat.wo[i]+se.wo[i]),lwd=2)
   text(x=structure[i],y=(dat.wo[i]+se.wo[i]+0.4),labels=t[i])
 }
-
-par(mfrow=c(1,1))
+mtext('Mean Annual Height Growth (cm)',side=2,line=-2,outer=TRUE)
 
 dev.off()
-Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
-embed_fonts("../dissertation/figures/fig4-2.pdf")
+#Sys.setenv(R_GSCMD = "C:/Program Files/gs/gs9.18/bin/gswin64c.exe")
+#embed_fonts("../dissertation/figures/fig4-2.pdf")

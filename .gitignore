@@ -1,4 +1,6 @@
 .Rproj.user
 .Rhistory
 .RData
+data*
+output*
 seedling-survival.Rproj

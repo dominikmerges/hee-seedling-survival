@@ -157,6 +157,23 @@ for(i in 1:nseedlings){
     index = index+1
   }}
 
+#Experimenting with neglog transformation
+
+neglog <- function(x){
+  
+  return (sign(x)*log(abs(x)+1))
+  
+}
+
+inv.neglog <- function(x){
+  if(is.na(x)){return(NA)}
+  if(x <= 0){
+    return(1 - exp(-x))
+  } else {return(exp(x)-1)}
+}
+
+growth <- apply(growth,c(1,2),neglog)
+
 ###############################
 
 #Bundle data for JAGS
@@ -166,7 +183,7 @@ jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'ye
                ,'browse','is.sprout'
                ,'aspect'
                ,'edge','harvest','shelter'
-               ,'comp'
+               #,'comp'
                ,'elapsed'
                ,'stem.comp'
 )
@@ -204,18 +221,16 @@ params <- c('site.sd','plot.sd'
 
 library(jagsUI)
 
-growthbo.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+growthbo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                        n.chains=3,iter.increment=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
 
-growthbo.output <- update(growthbo.output,n.iter=10000,n.thin=5)
-
-pp.check(growth.output,'fit','fit.new')
-
-save(growthbo.output,file="output/growthbo_output.Rda")
+pp.check(growthbo.output,'fit','fit.new')
 
 #############################################################
 
-growthwo.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                        n.chains=3,n.iter=10000,n.burnin=5000,n.thin=2,parallel=TRUE)
+growthwo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                            n.chains=3,iter.increment=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
 
-save(growthwo.output,file="output/growthwo_output.Rda")
+pp.check(growthwo.output,'fit','fit.new')
+
+save(growthbo.output,growthwo.output,file="output/growth_output.Rda")
