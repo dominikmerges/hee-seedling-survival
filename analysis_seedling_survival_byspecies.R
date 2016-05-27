@@ -69,8 +69,6 @@ for(i in 1:dim(sprout.time)[1]){
   }
 }
 
-
-
 #Browse quality control
 for (i in 1:nseedlings){
   for (j in 2:nsamples[i]){
@@ -88,8 +86,6 @@ shelter <- c(rep(0,48),rep(1,6))
 
 ##################################################################
 #Competition
-#comp <- seedling$comp.data[,1,]
-#comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 
 input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
 
@@ -176,8 +172,10 @@ jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                #,'comp'
                ,'stem.comp'
                ,'rcd'
+               #,'light','drought'
                #site covariates
-               ,'elapsed','season'
+               ,'elapsed',
+               ,'season'
                )
 
 ################################
@@ -191,12 +189,13 @@ modFile <- 'models/model_seedling_survival_byspecies.R'
 #Parameters to save
 
 params <- c('site.sd','plot.sd'
-            #,'seed.sd'
+            ,'seed.sd'
             ,'grand.mean'
             ,'b.browse'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
-            ,'b.edge_harvest','b.edge_shelter','b.shelter_harvest'
+            #,'b.edge_harvest','b.edge_shelter','b.shelter_harvest'
+            #,'b.light','b.lt.elap','b.drought'
             ,'b.aspect'
             ,'b.elapsed'
             ,'b.rcd'
@@ -226,7 +225,7 @@ library(jagsUI)
 survbo.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
                     n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
 
-survbo.output <- update(survbo.output,n.iter=1000,n.thin=5)
+survbo.output <- update(survbo.output,n.iter=1000,n.thin=10)
 
 save(survbo.output,file='output/survbo_output.Rda')
 

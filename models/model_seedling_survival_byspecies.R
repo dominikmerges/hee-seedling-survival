@@ -19,8 +19,8 @@ model {
   
   for (i in 1:nseedlings){
    
-    #seed.mean[i] ~ dnorm(seed.pred[i], seed.tau)
-    #seed.pred[i] <- plot.mean[seed.plotcode[i]]
+    seed.mean[i] ~ dnorm(seed.pred[i], seed.tau)
+    seed.pred[i] <- plot.mean[seed.plotcode[i]]
     
     for (j in 2:nsamples[i]){
       
@@ -28,15 +28,20 @@ model {
       
       psi[i,j] <- mu[i,j]*surv[i,j-1]
       
-      logit(mu[i,j]) <- #seed.mean[i]
-                      plot.mean[seed.plotcode[i]]
+      logit(mu[i,j]) <- seed.mean[i]
+                      #plot.mean[seed.plotcode[i]]
                       + b.rcd*rcd[i,j-1]
                       + b.sprout*is.sprout[i,j-1]
                       + b.browse*browse[i,j-1] 
                       + b.season*season[j] 
                       #+ b.comp*comp[seed.plotcode[i],j]
                       + b.comp*stem.comp[i,j]
-                      + b.elapsed*elapsed[j]           
+                      + b.elapsed*elapsed[j]
+                      #+ b.light*light[seed.plotcode[i],j]
+                      #+ b.drought*drought[j]
+                      #+ b.lt.elap*light[seed.plotcode[i],j]*elapsed[j]
+                      #+ b.lt.elap*light[seed.plotcode[i],j]*drought[j]
+      
                       #+ b.harvest_time*harvest[seed.plotcode[i]]*elapsed[j]
                       #+ b.edge_time*edge[seed.plotcode[i]]*elapsed[j]
                       #+ b.shelter_time*shelter[seed.plotcode[i]]*elapsed[j]
@@ -73,12 +78,15 @@ model {
   plot.tau <- pow(plot.sd,-2)
   plot.sd ~ dunif(0,100)
   
-  #seed.tau <- pow(seed.sd,-2)
-  #seed.sd ~ dunif(0,100)
+  seed.tau <- pow(seed.sd,-2)
+  seed.sd ~ dunif(0,100)
   
   b.edge ~ dnorm(0,0.01)
   b.harvest ~ dnorm(0,0.01)
   b.shelter ~ dnorm(0,0.01)
+  #b.light ~ dnorm(0,0.01)
+  #b.lt.elap ~ dnorm(0,0.01)
+  #b.drought ~ dnorm(0,0.01)
   
   b.comp ~ dnorm(0,0.01)
   b.aspect ~ dnorm(0,0.01)

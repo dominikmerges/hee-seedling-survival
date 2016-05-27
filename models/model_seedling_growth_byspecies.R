@@ -31,6 +31,8 @@ model {
                       + b.comp*stem.comp[i,j]
                       + b.sprout*is.sprout[i,j]
                       + b.elapsed*elapsed[j]
+                      + b.light*light[seed.plotcode[i],j]
+                      #+ b.lt.elap*light[seed.plotcode[i],j]*elapsed[j]
       
                     #+ b.comp_time*stem.comp[i,j]*elapsed[j]
       
@@ -77,6 +79,8 @@ model {
   b.browse ~ dnorm(0,0.01)
   b.sprout ~ dnorm(0,0.01)
   b.elapsed ~ dnorm(0,0.01)
+  #b.light ~ dnorm(0,0.01)
+  #b.lt.elap ~ dnorm(0,0.01)
                  
   #b.harvest_comp ~ dnorm(0,0.01)
   #b.edge_comp ~ dnorm(0,0.01)

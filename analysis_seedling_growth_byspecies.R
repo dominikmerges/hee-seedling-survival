@@ -8,7 +8,7 @@ source('format_data.R')
 seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established"
-keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$species==0)
+keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$species==1)
 sprout.raw <- seedling$sprout[keep,]
 
 #Keep track of when seedlings became sprouts
@@ -94,8 +94,6 @@ shelter <- c(rep(0,48),rep(1,6))
 
 ##################################################################
 #Competition
-#comp <- seedling$comp.data[,1,]
-#comp[which(is.na(comp),arr.ind=TRUE)] <- 0
 
 input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
 
@@ -186,6 +184,7 @@ jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'ye
                #,'comp'
                ,'elapsed'
                ,'stem.comp'
+               #,'light'
 )
 
 ################################
@@ -211,8 +210,8 @@ params <- c('site.sd','plot.sd'
             ,'b.browse'
             ,'b.sprout'
             ,'b.harvest_comp','b.edge_comp','b.shelter_comp'
+            #,'b.light','b.lt.elap'
             ,'fit','fit.new'
-            #,'b.comp_time'
 )
 
 ################################
@@ -222,14 +221,14 @@ params <- c('site.sd','plot.sd'
 library(jagsUI)
 
 growthbo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                        n.chains=3,iter.increment=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+                        n.chains=3,iter.increment=10000,n.burnin=10000,n.thin=100,parallel=TRUE)
 
 pp.check(growthbo.output,'fit','fit.new')
 
 #############################################################
 
 growthwo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                            n.chains=3,iter.increment=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+                            n.chains=3,iter.increment=10000,n.burnin=10000,n.thin=100,parallel=TRUE)
 
 pp.check(growthwo.output,'fit','fit.new')
 
