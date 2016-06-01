@@ -2,13 +2,13 @@
 ######Seedling growth analysis###########
 #########################################
 
-source('format_data.R')
+source('script_format_data.R')
 
 #Initial formatting on raw data
 seedling <- format.seedling('data/seedlingmaster.csv')
 
 #Only keep seedlings that "established"
-keep <- which(seedling$surv.sprout[,1]==1)
+keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$species==1)
 sprout.raw <- seedling$sprout[keep,]
 
 #Keep track of when seedlings became sprouts
@@ -92,16 +92,59 @@ edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
 harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
+##################################################################
 #Competition
-comp <- seedling$comp.data[,1,][,c(1,3,5,7)]
-comp[which(is.na(comp),arr.ind=TRUE)] <- 0
+
+input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
+
+stems <- array(data=NA,dim=c(54,3,4))
+stems[,,1] <- as.matrix(input[1:54,])
+stems[,,2] <- as.matrix(input[55:108,])
+stems[,,3] <- as.matrix(input[109:162,])
+stems[,,4] <- as.matrix(input[163:216,])
+
+stem.comp.new = matrix(data=NA,nrow=54,ncol=4)
+for (i in 1:54){
+  for (j in 1:4){
+    stem.comp.new[i,j] <- sum(stems[i,,j])
+  }
+}
+
+stem.comp.new = (stem.comp.new - mean(stem.comp.new,na.rm=T)) / sd(stem.comp.new,na.rm=T)
+stem.comp.new[which(is.na(stem.comp.new),arr.ind=TRUE)] <- 0
+
+ht <- seedling$height[,1:4]
+ht <- ht[keep,]
+ht <- ht[keep2,]
+
+stem.comp.raw <- matrix(NA,nrow=nseedlings,ncol=4)
+
+for (i in 1:nseedlings){
+  for (j in 1:nsamples[i]){    
+    hold.stems <- stems[seed.plotcode[i],,j]    
+    if (ht[i,j] <= 50) {stem.comp.raw[i,j] = sum(hold.stems[1:3])
+    } else if (ht[i,j] > 50 & ht[i,j] <= 100) {stem.comp.raw[i,j] = sum(hold.stems[2:3])
+    } else {stem.comp.raw[i,j] = hold.stems[3]}        
+  }
+}
+
+stem.comp <- (stem.comp.raw - mean(stem.comp.raw,na.rm=TRUE)) / sd(stem.comp.raw,na.rm=TRUE)
+
+index=0
+for (i in 1:nseedlings){
+  for (j in 1:nsamples[i]){
+    if(is.na(stem.comp[i,j])){
+      stem.comp[i,j] <- 0
+      index=index+1
+    }
+  }}
+
+###############################################################################################
 
 #Site level variables
 nsites <- 15
-
-#Year index
-
-year <- matrix(c(1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1),byrow=T,nrow=4)
+elapsed.raw <- c(1,2,3,4)
+elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
 #Index for posterior predictive check
 cucount = matrix(NA, nseedlings, 4)
@@ -112,38 +155,62 @@ for(i in 1:nseedlings){
     index = index+1
   }}
 
+#Experimenting with neglog transformation
+
+neglog <- function(x){
+  
+  return (sign(x)*log(abs(x)+1))
+  
+}
+
+inv.neglog <- function(x){
+  if(is.na(x)){return(NA)}
+  if(x <= 0){
+    return(1 - exp(-x))
+  } else {return(exp(x)-1)}
+}
+
+growth <- apply(growth,c(1,2),neglog)
+
 ###############################
 
 #Bundle data for JAGS
 
 jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'year'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
-               ,'rcd','browse','species','is.sprout'
+               ,'browse','is.sprout'
                ,'aspect'
                ,'edge','harvest','shelter'
-               ,'comp'
+               #,'comp'
+               ,'elapsed'
+               ,'stem.comp'
+               #,'light'
 )
 
 ################################
 
 #Model file
 
-modFile <- 'models/model_seedling_growth.R'
+modFile <- 'models/model_seedling_growth_byspecies.R'
 
 ################################
 
 #Parameters to save
 
-params <- c('site.sd','plot.sd','seed.sd','obs.sd','grand.mean'
+params <- c('site.sd','plot.sd'
+            ,'seed.sd'
+            ,'obs.sd','grand.mean'
             #,'b.y12','b.y13','b.y14'
             #,'diff.13.12','diff.14.13','diff.14.12'
+            ,'b.elapsed'
             ,'b.browse'
             ,'b.comp'
             ,'b.aspect'
             ,'b.edge','b.harvest','b.shelter'
-            ,'b.species'
             ,'b.browse'
             ,'b.sprout'
+            ,'b.harvest_comp','b.edge_comp','b.shelter_comp'
+            #,'b.light','b.lt.elap'
             ,'fit','fit.new'
 )
 
@@ -153,11 +220,16 @@ params <- c('site.sd','plot.sd','seed.sd','obs.sd','grand.mean'
 
 library(jagsUI)
 
-growth.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=15000,n.burnin=10000,n.thin=2,parallel=TRUE)
+growthbo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                        n.chains=3,iter.increment=10000,n.burnin=10000,n.thin=100,parallel=TRUE)
 
-growth.output <- update(growth.output,n.iter=15000,n.thin=10)
+pp.check(growthbo.output,'fit','fit.new')
 
-pp.check(growth.output,'fit','fit.new')
+#############################################################
 
-save(growth.output,file="output/growth_output.Rda")
+growthwo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                            n.chains=3,iter.increment=10000,n.burnin=10000,n.thin=100,parallel=TRUE)
+
+pp.check(growthwo.output,'fit','fit.new')
+
+save(growthbo.output,growthwo.output,file="output/growth_output.Rda")

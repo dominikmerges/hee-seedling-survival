@@ -160,5 +160,25 @@ for (i in 1:12){
   light.sum$light.se[i] <- round(sd(hold,na.rm=T)/sqrt(length(hold)),2)
 }
 
+##Canopy cover analysis
+library(pgirmess)
+library(plyr)
 
+treat <- rep('matrix',54)
+edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
+treat[which(edge==1)] <- 'edge'
+harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
+treat[which(harvest==1)] <- 'harvest'
+shelter <- c(rep(0,48),rep(1,6))
+treat[which(shelter==1)] <- 'shelter'
+treat <- as.factor(treat)
 
+canopy.frame <- data.frame(canopy=canopy[,1],treat=treat)
+
+se <- function(x){sd(x,na.rm=T)/length(x)}
+
+ddply(canopy.frame,~treat,summarise,mean=mean(canopy,na.rm=T),sd=se(canopy))
+
+canopy.test <- kruskal.test(canopy[,1],treat)
+
+canopy.mc.test <- kruskalmc(canopy[,1],treat)

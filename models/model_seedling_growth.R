@@ -18,16 +18,27 @@ model {
   for (i in 1:nseedlings){
     
     seed.mean[i] ~ dnorm(seed.pred[i], seed.tau)
-    seed.pred[i] <- plot.mean[seed.plotcode[i]] + b.species*species[i]
+    seed.pred[i] <- plot.mean[seed.plotcode[i]]
     
     for (j in 1:nsamples[i]){
       
       growth[i,j] ~ dnorm(mu[i,j],obs.tau)
       
-      mu[i,j] <- seed.mean[i] 
+      mu[i,j] <- seed.mean[i]
                       + b.browse*browse[i,j]
-                      + b.comp*comp[seed.plotcode[i],j] 
+                      #+ b.comp*comp[seed.plotcode[i],j] 
+                      #+ b.comp*comp[seed.plotcode[i]] 
+                      + b.comp*stem.comp[i,j]
                       + b.sprout*is.sprout[i,j]
+                      + b.elapsed*elapsed[j]
+                      + b.light*light[seed.plotcode[i],j]
+                      #+ b.lt.elap*light[seed.plotcode[i],j]*elapsed[j]
+      
+                    #+ b.comp_time*stem.comp[i,j]*elapsed[j]
+      
+                      #+ b.harvest_comp*harvest[seed.plotcode[i]]*stem.comp[i,j]
+                      #+ b.edge_comp*edge[seed.plotcode[i]]*stem.comp[i,j]
+                      #+ b.shelter_comp*shelter[seed.plotcode[i]]*stem.comp[i,j]
                       
       
       res[cucount[i,j]] <- growth[i,j] - mu[i,j]
@@ -65,8 +76,17 @@ model {
   b.edge ~ dnorm(0,0.01)
   b.harvest ~ dnorm(0,0.01)
   b.shelter ~ dnorm(0,0.01)  
-  b.species ~ dnorm(0,0.01)
   b.browse ~ dnorm(0,0.01)
   b.sprout ~ dnorm(0,0.01)
+  b.elapsed ~ dnorm(0,0.01)
+  #b.light ~ dnorm(0,0.01)
+  #b.lt.elap ~ dnorm(0,0.01)
+                 
+  #b.harvest_comp ~ dnorm(0,0.01)
+  #b.edge_comp ~ dnorm(0,0.01)
+  #b.shelter_comp ~ dnorm(0,0.01)
+  
+  #b.comp_time ~ dnorm(0,0.01)
+                    
   
 }

@@ -2,13 +2,13 @@
 ##Seedling Survival Analysis##################
 ##############################################
 
-source('format_data.R')
+source('script_format_data.R')
 
 #Initial formatting on raw data
 seedling <- format.seedling('data/seedlingmaster.csv')
 
-#Only keep seedlings that "established"
-keep <- which(seedling$surv.sprout[,1]==1)
+#Only keep seedlings that "established" and are of proper species
+keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$species==1)
 
 #Response variable
 surv <- seedling$surv.sprout[keep,]
@@ -25,7 +25,6 @@ seedling.covs <- seedling$seedling.data[keep,]
 seed.sitecode <- seedling.covs$siteid
 seed.plotcode <- seedling.covs$plotid
 age <- seedling.covs$age
-species <- seedling.covs$species
 
 #Root collar diameter format (stand-in for age and initial size)
 rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,2],seedling$rcd[,3],
@@ -59,6 +58,17 @@ for (i in 1:dim(sprout.raw)[1]){
 }
 is.sprout <- sprout.raw
 
+
+sprout.time <- array(NA,dim=dim(is.sprout))
+for(i in 1:dim(sprout.time)[1]){
+  
+  if(is.sprout[i,1]==1){sprout.time[i,1]=1}else{sprout.time[i,1]=0}
+  
+  for (j in 2:dim(sprout.time)[2]){
+    sprout.time[i,j] <- sum(is.sprout[i,1:j]) 
+  }
+}
+
 #Browse quality control
 for (i in 1:nseedlings){
   for (j in 2:nsamples[i]){
@@ -74,13 +84,58 @@ edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
 harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
+##################################################################
 #Competition
-comp <- seedling$comp.data[,1,]
-comp[which(is.na(comp),arr.ind=TRUE)] <- 0
+
+input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
+
+stems <- array(data=NA,dim=c(54,3,4))
+stems[,,1] <- as.matrix(input[1:54,])
+stems[,,2] <- as.matrix(input[55:108,])
+stems[,,3] <- as.matrix(input[109:162,])
+stems[,,4] <- as.matrix(input[163:216,])
+
+init <- seedling$seedling.data$initialht[keep]
+
+ht <- seedling$height[,1:4]
+ht <- ht[keep,]
+
+stem.comp.raw <- matrix(NA,nrow=nseedlings,ncol=8)
+samp.ind <- c(1,1,2,2,3,3,4,4)
+
+for (i in 1:nseedlings){
+  for (j in 1:nsamples[i]){    
+    hold.stems <- stems[seed.plotcode[i],,samp.ind[j]]
+    
+    if(is.na(ht[i,samp.ind[j]])){
+      if(is.na(init[i])){ht[i,samp.ind[j]] <- 0
+      } else {ht[i,samp.ind[j]] <- init[i]}}
+    
+    
+    if (ht[i,samp.ind[j]] <= 50) {stem.comp.raw[i,j] = sum(hold.stems[1:3])
+    } else if (ht[i,samp.ind[j]] > 50 & ht[i,samp.ind[j]] <= 100) {stem.comp.raw[i,j] = sum(hold.stems[2:3])
+    } else {stem.comp.raw[i,j] = hold.stems[3]}        
+  }
+}
+
+stem.comp <- (stem.comp.raw - mean(stem.comp.raw,na.rm=TRUE)) / sd(stem.comp.raw,na.rm=TRUE)
+
+index=0
+for (i in 1:nseedlings){
+  for (j in 1:nsamples[i]){
+    if(is.na(stem.comp[i,j])){
+      stem.comp[i,j] <- 0
+      index=index+1
+    }
+  }}
+
+###############################################################################################
 
 #Site level variables
 nsites <- 15
-elapsed.raw <- as.matrix(seedling$elapsed)
+#elapsed.raw <- as.matrix(seedling$elapsed)
+#elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
+elapsed.raw <- c(1,1,2,2,3,3,4,4)
 elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
 #Season vector
@@ -110,33 +165,55 @@ for(i in 1:nseedlings){
 jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                #seedling covariates
-               ,'browse','species','is.sprout'
+               ,'browse','is.sprout'#,'sprout.time'
                #plot covariates
                ,'edge','harvest','shelter'
-               ,'aspect','comp','rcd'
+               ,'aspect'
+               #,'comp'
+               ,'stem.comp'
+               ,'rcd'
+               #,'light','drought'
                #site covariates
-               ,'elapsed','season'
+               ,'elapsed',
+               ,'season'
                )
 
 ################################
 
 #Model file
 
-modFile <- 'models/model_seedling_survival.R'
+modFile <- 'models/model_seedling_survival_byspecies.R'
 
 ################################
 
 #Parameters to save
 
-params <- c('site.sd','plot.sd','seed.sd','grand.mean'
+params <- c('site.sd','plot.sd'
+            ,'seed.sd'
+            ,'grand.mean'
             ,'b.browse'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
+            #,'b.edge_harvest','b.edge_shelter','b.shelter_harvest'
+            #,'b.light','b.lt.elap','b.drought'
             ,'b.aspect'
-            #,'b.elapsed'
-            ,'b.species','b.rcd'
-            ,'b.browse','b.season','b.sprout'
+            ,'b.elapsed'
+            ,'b.rcd'
+            ,'b.browse'
+            ,'b.season'
+            ,'b.sprout'
             ,'fit','fit.new'
+            #,'b.harvest_time'
+            #,'b.edge_time'
+            #,'b.shelter_time'
+            #,'b.harvest_browse'
+            #,'b.edge_browse'
+            #,'b.shelter_browse'
+            #,'b.harvest_comp'
+            #,'b.edge_comp'
+            #,'b.shelter_comp'
+            #,'b.browse_comp'
+            #,'b.sprout_time'
   )
 
 ################################
@@ -145,11 +222,19 @@ params <- c('site.sd','plot.sd','seed.sd','grand.mean'
 
 library(jagsUI)
 
-surv.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
-                    n.chains=3,n.iter=2000,n.burnin=1000,n.thin=2,parallel=TRUE)
+survbo.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                    n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
 
-surv.output <- update(surv.output,n.iter=5000,n.thin=10)
+survbo.output <- update(survbo.output,n.iter=1000,n.thin=10)
 
-save(surv.output,file='output/surv_output.Rda')
+save(survbo.output,file='output/survbo_output.Rda')
 
 
+####################################
+
+survwo2.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFile,
+                      n.chains=3,n.iter=1000,n.burnin=500,n.thin=2,parallel=TRUE)
+
+survwo.output <- update(survwo.output,n.iter=2000,n.thin=5)
+
+save(survwo.output,file='output/survwo_output.Rda')
