@@ -65,7 +65,7 @@ for (i in 2:8){
 #pdf(file="../dissertation/figures/fig4-1.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
 #Output figure as TIFF file
-tiff(filename="Fig1_Surv.tiff",width=3.9,height=5,units="in",res=400, pointsize=8,
+tiff(filename="Fig1_Surv.tiff",width=3,height=3.8,units="in",res=300, pointsize=6,
      compression = "lzw",type='cairo')
 
 par(mfrow=c(2,1),
@@ -82,21 +82,21 @@ cols <- c('gray','gray','black','black')
 #          rgb(red=141,green=213,blue=18, maxColorValue=255),
 #          rgb(red=75,green=142,blue=26, maxColorValue=255))
 
-plot(bo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
+plot(bo.surv.cl,type="o",lwd=1,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'Black Oak',cex=1.3)
 
 
 text(8.55,0.38,"A")
-segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=2)
-segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=2)
-segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=2)
+segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=1)
+segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=1)
+segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=1)
 text(8.55,0.18,"B")
 
-lines(bo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(bo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(bo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(bo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+lines(bo.surv.cl,type="o",lwd=1,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(bo.surv.eg,type="o",lwd=1,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(bo.surv.sh,type="o",lwd=1,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(bo.surv.ma,type="o",lwd=1,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
   segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)  
@@ -125,20 +125,20 @@ points(bo.surv.ma,col=cols[4],pch=20,cex=1.5)
 legend('topright',lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
        legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'))
 
-plot(wo.surv.cl,type="o",lwd=2,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
+plot(wo.surv.cl,type="o",lwd=1,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'White Oak',cex=1.3)
 axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14'))
 
 text(8.55,0.42,"A")
-segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=2)
-segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=2)
-segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=2)
+segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=1)
+segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=1)
+segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=1)
 
-lines(wo.surv.cl,type="o",lwd=2,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(wo.surv.eg,type="o",lwd=2,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(wo.surv.sh,type="o",lwd=2,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(wo.surv.ma,type="o",lwd=2,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+lines(wo.surv.cl,type="o",lwd=1,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(wo.surv.eg,type="o",lwd=1,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(wo.surv.sh,type="o",lwd=1,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(wo.surv.ma,type="o",lwd=1,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
   segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)  
@@ -159,10 +159,10 @@ for(i in 2:8){
   
 }
 
-lines(wo.surv.cl,col=cols[1],pch=20,cex=1.5)
-lines(wo.surv.eg,col=cols[2],pch=20,cex=1.5)
-lines(wo.surv.sh,col=cols[3],pch=20,cex=1.5)
-lines(wo.surv.ma,col=cols[4],pch=20,cex=1.5)
+points(wo.surv.cl,col=cols[1],pch=20,cex=1.5)
+points(wo.surv.eg,col=cols[2],pch=20,cex=1.5)
+points(wo.surv.sh,col=cols[3],pch=20,cex=1.5)
+points(wo.surv.ma,col=cols[4],pch=20,cex=1.5)
 
 mtext('Time',side=1,line=2.5,outer=TRUE, at=c(0.55))
 mtext('Proportion of Seedlings Surviving',side=2,line=-1.5,outer=TRUE)

@@ -1,5 +1,5 @@
 ################################################
-##Oak Seedling Growth Figure (Fig. 2 in paper)##
+##Oak Seedling Growth Figure (Fig. 3 in paper)##
 ################################################
 
 #Initial formatting on raw data
@@ -108,7 +108,7 @@ TukeyHSD(wo)
 ###############################################
 
 #Output figure as TIFF file
-tiff(filename="Fig2_Growth.tiff",width=3.9,height=5,units="in",res=400, pointsize=8,
+tiff(filename="Fig2_Growth.tiff",width=3,height=3.8,units="in",res=300, pointsize=6,
      compression = "lzw",type='cairo')
 
 #Output as PDF (for dissertation)
@@ -133,8 +133,8 @@ text(1,6.5,'Black Oak',cex=1.3)
 structure = rev(c(0.7,1.9,3.1,4.3))
 t = rev(c('A','AB','A','B'))
 for (i in 1:4){
-  segments(x0=structure[i],y0=(dat.bo[i]),x1=structure[i],y1=(dat.bo[i]+se.bo[i]),lwd=2)
-  segments(x0=structure[i]-0.2,y0=(dat.bo[i]+se.bo[i]),x1=structure[i]+0.2,y1=(dat.bo[i]+se.bo[i]),lwd=2)
+  segments(x0=structure[i],y0=(dat.bo[i]),x1=structure[i],y1=(dat.bo[i]+se.bo[i]),lwd=1)
+  segments(x0=structure[i]-0.2,y0=(dat.bo[i]+se.bo[i]),x1=structure[i]+0.2,y1=(dat.bo[i]+se.bo[i]),lwd=1)
   
   text(x=structure[i],y=(dat.bo[i]+se.bo[i]+0.4),labels=t[i])
 }
@@ -147,8 +147,8 @@ text(1,6.5,'White Oak',cex=1.3)
 structure = rev(c(0.7,1.9,3.1,4.3))
 t = rev(c('A','AB','A','A'))
 for (i in 1:4){
-  segments(x0=structure[i],y0=(dat.wo[i]),x1=structure[i],y1=(dat.wo[i]+se.wo[i]),lwd=2)
-  segments(x0=structure[i]-0.2,y0=(dat.wo[i]+se.wo[i]),x1=structure[i]+0.2,y1=(dat.wo[i]+se.wo[i]),lwd=2)
+  segments(x0=structure[i],y0=(dat.wo[i]),x1=structure[i],y1=(dat.wo[i]+se.wo[i]),lwd=1)
+  segments(x0=structure[i]-0.2,y0=(dat.wo[i]+se.wo[i]),x1=structure[i]+0.2,y1=(dat.wo[i]+se.wo[i]),lwd=1)
   text(x=structure[i],y=(dat.wo[i]+se.wo[i]+0.4),labels=t[i])
 }
 mtext('Mean Annual Height Growth (cm)',side=2,line=-2,outer=TRUE)

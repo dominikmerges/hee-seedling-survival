@@ -1,6 +1,6 @@
-#########################################
-######Seedling growth analysis###########
-#########################################
+##########################
+#Seedling growth analysis#
+##########################
 
 source('script_format_data.R')
 
@@ -32,6 +32,7 @@ for (i in 1:dim(ht)[1]){
     end[i] <- min(firstNA,first0) - 1
   } else {end[i]=4}
 }
+
 #Only keep seedlings which have at least one recorded growth in height
 #(i.e., did not die in period 2)
 keep2 <- which(end>0)
@@ -48,26 +49,6 @@ seed.plotcode <- seedling.covs$plotid
 age <- seedling.covs$age
 species <- seedling.covs$species
 
-###################################################Not using
-
-#Format root collar diameter data (not using currently)
-rcd.raw <- as.matrix(cbind(seedling$rcd[,1],seedling$rcd[,2],seedling$rcd[,3],
-                           seedling$rcd[,4]))
-rcd.raw <- rcd.raw[keep,]
-rcd.raw <- rcd.raw[keep2,]
-rcd.raw[is.na(rcd.raw[,1])&age==1,1] <- mean(rcd.raw[age==1,1],na.rm=TRUE)
-rcd.raw[is.na(rcd.raw[,1])&age==0,1] <- mean(rcd.raw[age==0,1],na.rm=TRUE)
-for (i in 1:dim(growth)[1]){
-  for (j in 1:4){
-    if(!is.na(growth[i,j])){
-      if(is.na(rcd.raw[i,j])){
-        rcd.raw[i,j] <- rcd.raw[i,(j-1)]  
-      }}}}
-rcd <- (rcd.raw - mean(rcd.raw,na.rm=TRUE)) / sd(rcd.raw,na.rm=TRUE)
-rcd[47,2] <- -1.32332005
-
-#############################################################################
-
 #Browse - simplify to presence/absence for now
 browse <- seedling$browse[keep,]
 browse <- browse[keep2,]
@@ -82,10 +63,11 @@ for (i in 1:nseedlings){
       browse[i,j] <- 0
     }}}
 
+#Identify seedlings as having resprouted
 is.sprout <- sprout.raw[keep2,]
 
 #Format plot-level variables
-nplots <- 54
+nsubplots <- 54
 aspect <- seedling$plot.data$aspect
 plot.sitecode <- seedling$plot.data$siteid
 edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
@@ -93,8 +75,9 @@ harvest <- c(rep(c(1,1,1,1,1,1,1,1,0,0,0,0,0,0,0,0),3),rep(0,6))
 shelter <- c(rep(0,48),rep(1,6))
 
 ##################################################################
-#Competition
+#Competition index
 
+#Read in data
 input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
 
 stems <- array(data=NA,dim=c(54,3,4))
@@ -103,16 +86,7 @@ stems[,,2] <- as.matrix(input[55:108,])
 stems[,,3] <- as.matrix(input[109:162,])
 stems[,,4] <- as.matrix(input[163:216,])
 
-stem.comp.new = matrix(data=NA,nrow=54,ncol=4)
-for (i in 1:54){
-  for (j in 1:4){
-    stem.comp.new[i,j] <- sum(stems[i,,j])
-  }
-}
-
-stem.comp.new = (stem.comp.new - mean(stem.comp.new,na.rm=T)) / sd(stem.comp.new,na.rm=T)
-stem.comp.new[which(is.na(stem.comp.new),arr.ind=TRUE)] <- 0
-
+#Determine how many stems were taller than each oak
 ht <- seedling$height[,1:4]
 ht <- ht[keep,]
 ht <- ht[keep2,]
@@ -130,6 +104,7 @@ for (i in 1:nseedlings){
 
 stem.comp <- (stem.comp.raw - mean(stem.comp.raw,na.rm=TRUE)) / sd(stem.comp.raw,na.rm=TRUE)
 
+#Cleanup missing values
 index=0
 for (i in 1:nseedlings){
   for (j in 1:nsamples[i]){
@@ -139,10 +114,9 @@ for (i in 1:nseedlings){
     }
   }}
 
-###############################################################################################
-
+########################################################
 #Site level variables
-nsites <- 15
+nplots <- 15
 elapsed.raw <- c(1,2,3,4)
 elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
@@ -155,7 +129,7 @@ for(i in 1:nseedlings){
     index = index+1
   }}
 
-#Experimenting with neglog transformation
+#Neglog transformation (Whittaker et al. 2005)
 
 neglog <- function(x){
   
@@ -170,13 +144,14 @@ inv.neglog <- function(x){
   } else {return(exp(x)-1)}
 }
 
+#Apply to raw data
 growth <- apply(growth,c(1,2),neglog)
 
 ###############################
 
 #Bundle data for JAGS
 
-jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'year'
+jags.data <- c('growth','nseedlings','nsamples','nplots','nsubplots','cucount'#,'year'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
                ,'browse','is.sprout'
                ,'aspect'
@@ -191,7 +166,7 @@ jags.data <- c('growth','nseedlings','nsamples','nplots','nsites','cucount'#,'ye
 
 #Model file
 
-modFile <- 'models/model_seedling_growth_byspecies.R'
+modFile <- 'models/model_seedling_growth.R'
 
 ################################
 
@@ -200,8 +175,6 @@ modFile <- 'models/model_seedling_growth_byspecies.R'
 params <- c('site.sd','plot.sd'
             ,'seed.sd'
             ,'obs.sd','grand.mean'
-            #,'b.y12','b.y13','b.y14'
-            #,'diff.13.12','diff.14.13','diff.14.12'
             ,'b.elapsed'
             ,'b.browse'
             ,'b.comp'
@@ -210,7 +183,6 @@ params <- c('site.sd','plot.sd'
             ,'b.browse'
             ,'b.sprout'
             ,'b.harvest_comp','b.edge_comp','b.shelter_comp'
-            #,'b.light','b.lt.elap'
             ,'fit','fit.new'
 )
 
@@ -232,4 +204,4 @@ growthwo.output <- autojags(data=jags.data,parameters.to.save=params,model.file=
 
 pp.check(growthwo.output,'fit','fit.new')
 
-save(growthbo.output,growthwo.output,file="output/growth_output.Rda")
+save(growthbo.output,growthwo.output,file="output/growth_output.Rdata")

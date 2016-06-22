@@ -1,6 +1,6 @@
-##############################################
-##Seedling Survival Analysis##################
-##############################################
+############################
+#Seedling survival analysis#
+############################
 
 source('script_format_data.R')
 
@@ -77,7 +77,7 @@ for (i in 1:nseedlings){
     }}}
 
 #Format plot-level variables
-nplots <- 54
+nsubplots <- 54
 aspect <- seedling$plot.data$aspect
 plot.sitecode <- seedling$plot.data$siteid
 edge <- c(rep(c(0,0,0,0,0,0,0,0,1,1,1,1,0,0,0,0),3),rep(0,6))
@@ -97,6 +97,7 @@ stems[,,4] <- as.matrix(input[163:216,])
 
 init <- seedling$seedling.data$initialht[keep]
 
+#Determine how many competitors are taller than a given oak
 ht <- seedling$height[,1:4]
 ht <- ht[keep,]
 
@@ -120,6 +121,7 @@ for (i in 1:nseedlings){
 
 stem.comp <- (stem.comp.raw - mean(stem.comp.raw,na.rm=TRUE)) / sd(stem.comp.raw,na.rm=TRUE)
 
+#Clean up missing values
 index=0
 for (i in 1:nseedlings){
   for (j in 1:nsamples[i]){
@@ -129,12 +131,10 @@ for (i in 1:nseedlings){
     }
   }}
 
-###############################################################################################
+#######################################################################
 
 #Site level variables
-nsites <- 15
-#elapsed.raw <- as.matrix(seedling$elapsed)
-#elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
+nplots <- 15
 elapsed.raw <- c(1,1,2,2,3,3,4,4)
 elapsed <- (elapsed.raw - mean(elapsed.raw))/sd(elapsed.raw)
 
@@ -162,19 +162,14 @@ for(i in 1:nseedlings){
 
 #Bundle data for JAGS
 
-jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
+jags.data <- c('surv','nseedlings','nsamples','nplots','nsubplots','cucount'
                ,'seed.plotcode','plot.sitecode','seed.sitecode'
-               #seedling covariates
-               ,'browse','is.sprout'#,'sprout.time'
-               #plot covariates
+               ,'browse','is.sprout'
                ,'edge','harvest','shelter'
                ,'aspect'
-               #,'comp'
                ,'stem.comp'
                ,'rcd'
-               #,'light','drought'
-               #site covariates
-               ,'elapsed',
+               ,'elapsed'
                ,'season'
                )
 
@@ -182,7 +177,7 @@ jags.data <- c('surv','nseedlings','nsamples','nplots','nsites','cucount'
 
 #Model file
 
-modFile <- 'models/model_seedling_survival_byspecies.R'
+modFile <- 'models/model_seedling_survival.R'
 
 ################################
 
@@ -194,8 +189,6 @@ params <- c('site.sd','plot.sd'
             ,'b.browse'
             ,'b.comp'
             ,'b.edge','b.harvest','b.shelter'
-            #,'b.edge_harvest','b.edge_shelter','b.shelter_harvest'
-            #,'b.light','b.lt.elap','b.drought'
             ,'b.aspect'
             ,'b.elapsed'
             ,'b.rcd'
@@ -203,17 +196,6 @@ params <- c('site.sd','plot.sd'
             ,'b.season'
             ,'b.sprout'
             ,'fit','fit.new'
-            #,'b.harvest_time'
-            #,'b.edge_time'
-            #,'b.shelter_time'
-            #,'b.harvest_browse'
-            #,'b.edge_browse'
-            #,'b.shelter_browse'
-            #,'b.harvest_comp'
-            #,'b.edge_comp'
-            #,'b.shelter_comp'
-            #,'b.browse_comp'
-            #,'b.sprout_time'
   )
 
 ################################
@@ -237,4 +219,4 @@ survwo2.output <- jags(data=jags.data,parameters.to.save=params,model.file=modFi
 
 survwo.output <- update(survwo.output,n.iter=2000,n.thin=5)
 
-save(survwo.output,file='output/survwo_output.Rda')
+save(survwo.output,file='output/survwo_output.Rdata')

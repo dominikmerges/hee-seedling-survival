@@ -1,46 +1,47 @@
+#########################################################
+##BUGS Code for Hierarchical Oak Seedling Growth Model##
+#########################################################
 
 model {
   
   #Likelihood
   
+  #Plot mean
   for (i in 1:nsites){
-    site.mean[i] ~ dnorm(grand.mean,site.tau)
+    plot.mean[i] ~ dnorm(grand.mean,plot.tau)
   }
   
+  #Subplot mean
   for (i in 1:nplots){
-    plot.mean[i] ~ dnorm(plot.pred[i], plot.tau)
-    plot.pred[i] <- site.mean[plot.sitecode[i]] 
-                  + b.aspect*aspect[i]
-                  + b.edge*edge[i] + b.harvest*harvest[i] + b.shelter*shelter[i]
-                  
+    subplot.mean[i] ~ dnorm(subplot.pred[i], subplot.tau)
+    subplot.pred[i] <- plot.mean[plot.sitecode[i]] 
+    + b.aspect*aspect[i] #effect of aspect
+    + b.edge*edge[i] #effect of harvest treatment
+    + b.harvest*harvest[i]
+    + b.shelter*shelter[i]
   }
   
+  #Seedling mean
   for (i in 1:nseedlings){
     
+    #Seedling random effect
     seed.mean[i] ~ dnorm(seed.pred[i], seed.tau)
     seed.pred[i] <- plot.mean[seed.plotcode[i]]
     
+    #Iterate over each sampling occasion
     for (j in 1:nsamples[i]){
       
+      #Model neglog-transformed data
       growth[i,j] ~ dnorm(mu[i,j],obs.tau)
       
+      #Expected growth
       mu[i,j] <- seed.mean[i]
-                      + b.browse*browse[i,j]
-                      #+ b.comp*comp[seed.plotcode[i],j] 
-                      #+ b.comp*comp[seed.plotcode[i]] 
-                      + b.comp*stem.comp[i,j]
-                      + b.sprout*is.sprout[i,j]
-                      + b.elapsed*elapsed[j]
-                      + b.light*light[seed.plotcode[i],j]
-                      #+ b.lt.elap*light[seed.plotcode[i],j]*elapsed[j]
+      + b.browse*browse[i,j] #effect of herbivory
+      + b.comp*stem.comp[i,j] #effect of competition
+      + b.sprout*is.sprout[i,j] #effect of being a resprout
+      + b.elapsed*elapsed[j] #effect of elapsed time since planting
       
-                    #+ b.comp_time*stem.comp[i,j]*elapsed[j]
-      
-                      #+ b.harvest_comp*harvest[seed.plotcode[i]]*stem.comp[i,j]
-                      #+ b.edge_comp*edge[seed.plotcode[i]]*stem.comp[i,j]
-                      #+ b.shelter_comp*shelter[seed.plotcode[i]]*stem.comp[i,j]
-                      
-      
+      #Calculate values for posterior predictive check
       res[cucount[i,j]] <- growth[i,j] - mu[i,j]
       sqres[cucount[i,j]] <- pow(res[cucount[i,j]],2)
       growth.new[i,j] ~ dnorm(mu[i,j],obs.tau)
@@ -49,21 +50,19 @@ model {
     }
   }
   
-  #diff.13.12 <- b.y13 - b.y12
-  #diff.14.13 <- b.y14 - b.y13
-  #diff.14.12 <- b.y14 - b.y12
   
+  #For posterior predictive check
   fit <- sum(sqres[])
   fit.new <- sum(sqres.new[])
   
   #Priors
   
   grand.mean ~ dunif(-100,100)
-  site.tau <- pow(site.sd,-2)
-  site.sd ~ dunif(0,100)
-  
   plot.tau <- pow(plot.sd,-2)
   plot.sd ~ dunif(0,100)
+  
+  subplot.tau <- pow(subplot.sd,-2)
+  subplot.sd ~ dunif(0,100)
   
   seed.tau <- pow(seed.sd,-2)
   seed.sd ~ dunif(0,100)
@@ -79,14 +78,5 @@ model {
   b.browse ~ dnorm(0,0.01)
   b.sprout ~ dnorm(0,0.01)
   b.elapsed ~ dnorm(0,0.01)
-  #b.light ~ dnorm(0,0.01)
-  #b.lt.elap ~ dnorm(0,0.01)
-                 
-  #b.harvest_comp ~ dnorm(0,0.01)
-  #b.edge_comp ~ dnorm(0,0.01)
-  #b.shelter_comp ~ dnorm(0,0.01)
-  
-  #b.comp_time ~ dnorm(0,0.01)
-                    
   
 }
