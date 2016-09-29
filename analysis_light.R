@@ -3,7 +3,7 @@
 ################################################
 
 #Read in competition data
-comp <- read.csv('data/competition.csv',header=TRUE)[,-c(6:10)]
+comp <- read.csv('data/hee_competition.csv',header=TRUE)[,-c(6:10)]
 
 #Calculate mean canopy cover values by subplot and visit
 canMeans <- apply(comp[,6:9],1,mean,na.rm=T)
@@ -48,6 +48,7 @@ names(light.sum) <- c('unit','treat','light','light.se')
 light.sum[,1] <- rep(c(3,6,9),each=4)
 light.sum[,2] <- rep(c('matrix','edge','harvest','shelter'),3)
 
+#Assign treatment to light values
 for (i in 1:12){
   
   if(light.sum$treat[i]=='matrix'){select=matrix}
@@ -61,7 +62,7 @@ for (i in 1:12){
   light.sum$light.se[i] <- round(sd(hold,na.rm=T)/sqrt(length(hold)),2)
 }
 
-##Canopy cover analysis
+#Nonparametric canopy cover analysis
 library(pgirmess)
 library(plyr)
 

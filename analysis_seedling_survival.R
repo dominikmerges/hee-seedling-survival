@@ -5,7 +5,7 @@
 source('script_format_data.R')
 
 #Initial formatting on raw data
-seedling <- format.seedling('data/seedlingmaster.csv')
+seedling <- format.seedling('data/hee_seedling_master.csv')
 
 #Only keep seedlings that "established" and are of proper species
 keep <- which(seedling$surv.sprout[,1]==1&seedling$seedling.data$species==1)
@@ -87,7 +87,7 @@ shelter <- c(rep(0,48),rep(1,6))
 ##################################################################
 #Competition
 
-input <- read.csv('data/competition.csv',header=TRUE)[,8:10]
+input <- read.csv('data/hee_competition.csv',header=TRUE)[,8:10]
 
 stems <- array(data=NA,dim=c(54,3,4))
 stems[,,1] <- as.matrix(input[1:54,])
