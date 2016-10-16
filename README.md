@@ -5,7 +5,7 @@ Comparison of white and black oak seedling growth and survival under multiple ha
 
 The results are published in the following article:
 
-*Kellner, Kenneth F., and Robert K. Swihart. 2016. Timber harvest and drought interact to impact oak seedling growth and survival in the Central Hardwood Forest. Ecosphere.*
+[*Kellner, Kenneth F., and Robert K. Swihart. 2016. Timber harvest and drought interact to impact oak seedling growth and survival in the Central Hardwood Forest. Ecosphere 7: e01473.*](http://dx.doi.org/10.1002/ecs2.1473)
 
 Metadata
 ========
