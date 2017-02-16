@@ -3,8 +3,8 @@
 ################################################
 
 #Initial formatting on raw data
-source('script_format_data.R')
-seedling <- format.seedling('data/seedlingmaster.csv')
+source('function_format_data.R')
+seedling <- format.seedling('data/hee_seedling_master.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)
@@ -111,6 +111,19 @@ TukeyHSD(wo)
 tiff(filename="Fig2_Growth.tiff",width=3,height=3.8,units="in",res=300, pointsize=6,
      compression = "lzw",type='cairo')
 
+#Output as PNG (for talks)
+#png(filename="figures/seedling_growth.png",width=6,height=3.8,units="in",res=400, pointsize=8,
+#    type='cairo')
+
+#par(mfrow=c(1,2),
+#    oma = c(4,0,0,0) + 0.1,
+#    mar = c(0,4,0,0) + 0.1)
+
+#cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
+#          rgb(red=241,green=194,blue=50, maxColorValue=255),
+#          rgb(red=141,green=213,blue=18, maxColorValue=255),
+#          rgb(red=75,green=142,blue=26, maxColorValue=255))
+
 #Output as PDF (for dissertation)
 #library(extrafont)
 #font_install('fontcm')
@@ -119,11 +132,6 @@ tiff(filename="Fig2_Growth.tiff",width=3,height=3.8,units="in",res=300, pointsiz
 
 par(mar = c(4,4.5,0.5,2) + 0.1)
 par(fig=c(0,1,0.45,1),new=FALSE,mgp=c(2.5,1,0))
-
-cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
-          rgb(red=241,green=194,blue=50, maxColorValue=255),
-          rgb(red=141,green=213,blue=18, maxColorValue=255),
-          rgb(red=75,green=142,blue=26, maxColorValue=255))
 
 cols <- c('white','gray80','gray30','black')
 
@@ -138,6 +146,9 @@ for (i in 1:4){
   
   text(x=structure[i],y=(dat.bo[i]+se.bo[i]+0.4),labels=t[i])
 }
+
+#par(mar = c(0,3,0,1) + 0.1) #For talk figure
+
 par(fig=c(0,1,0,0.55),new=TRUE)
 barplot(rev(dat.wo),col=rev(cols),ylim=c(0,7.75),
         names=c('Forest','Shelter','Clear Edge','Clear Int'),xlab="Treatment",

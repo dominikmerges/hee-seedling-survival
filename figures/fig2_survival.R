@@ -3,8 +3,8 @@
 ##################################################
 
 #Initial formatting on raw data
-source('script_format_data.R')
-seedling <- format.seedling('data/seedlingmaster.csv')
+source('function_format_data.R')
+seedling <- format.seedling('data/hee_seedling_master.csv')
 
 #Only keep seedlings that "established"
 keep <- which(seedling$surv.sprout[,1]==1)
@@ -64,6 +64,8 @@ for (i in 2:8){
 #loadfonts()
 #pdf(file="../dissertation/figures/fig4-1.pdf",width=5,height=5,family="CM Roman",pointsize=10)
 
+##############################################
+#For paper
 #Output figure as TIFF file
 tiff(filename="Fig1_Surv.tiff",width=3,height=3.8,units="in",res=300, pointsize=6,
      compression = "lzw",type='cairo')
@@ -72,20 +74,37 @@ par(mfrow=c(2,1),
     oma = c(4,0,0,0) + 0.1,
     mar = c(0,4,1,1) + 0.1)
 
-ltys = c(1,2,1,2)
-
 cols <- c('gray','gray','black','black')
 
-#For presentations
-#cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
-#          rgb(red=241,green=194,blue=50, maxColorValue=255),
-#          rgb(red=141,green=213,blue=18, maxColorValue=255),
-#          rgb(red=75,green=142,blue=26, maxColorValue=255))
+ltys = c(1,2,1,2)
 
-plot(bo.surv.cl,type="o",lwd=1,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
+lwds = 1
+
+#########################################
+#For presentations
+png(filename="figures/seedling_survival.png",width=6,height=3.8,units="in",res=400, pointsize=8,
+    type='cairo')
+
+par(mfrow=c(1,2),
+    oma = c(4,0,0,0) + 0.1,
+    mar = c(0,4,1,0) + 0.1)
+
+#For presentations
+cols <- c(rgb(red=244,green=125,blue=66, maxColorValue=255),
+          rgb(red=241,green=194,blue=50, maxColorValue=255),
+          rgb(red=141,green=213,blue=18, maxColorValue=255),
+          rgb(red=75,green=142,blue=26, maxColorValue=255))
+
+ltys = rep(1,4)
+
+lwds = 2
+
+#########################################
+
+plot(bo.surv.cl,type="o",lwd=lwds,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'Black Oak',cex=1.3)
-
+axis(1,at=c(1:8),labels=c('S11','F11','S12','F12','S13','F13','S14','F14')) #For presentations
 
 text(8.55,0.38,"A")
 segments(x0=8.3,y0=0.32,x1=8.3,y1=0.44,lwd=1)
@@ -93,27 +112,27 @@ segments(x0=8.3,y0=0.44,x1=8.2,y1=0.44,lwd=1)
 segments(x0=8.3,y0=0.32,x1=8.2,y1=0.32,lwd=1)
 text(8.55,0.18,"B")
 
-lines(bo.surv.cl,type="o",lwd=1,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(bo.surv.eg,type="o",lwd=1,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(bo.surv.sh,type="o",lwd=1,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(bo.surv.ma,type="o",lwd=1,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+lines(bo.surv.cl,type="o",lwd=lwds,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(bo.surv.eg,type="o",lwd=lwds,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(bo.surv.sh,type="o",lwd=lwds,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(bo.surv.ma,type="o",lwd=lwds,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
-  segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)  
-  segments(x0=i-0.1,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]-bo.se.cl[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.cl[i]+bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]+bo.se.cl[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i,y1=(bo.surv.cl[i]+bo.se.cl[i]),col='black',lwd=1)  
+  segments(x0=i-0.1,y0=(bo.surv.cl[i]-bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]-bo.se.cl[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.cl[i]+bo.se.cl[i]),x1=i+0.1,y1=(bo.surv.cl[i]+bo.se.cl[i]),col='black',lwd=1)
   
-  segments(x0=i,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]-bo.se.eg[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.eg[i]+bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]+bo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i,y1=(bo.surv.eg[i]+bo.se.eg[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.eg[i]-bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]-bo.se.eg[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.eg[i]+bo.se.eg[i]),x1=i+0.1,y1=(bo.surv.eg[i]+bo.se.eg[i]),col='black',lwd=1)
   
-  segments(x0=i,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]-bo.se.sh[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.sh[i]+bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]+bo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i,y1=(bo.surv.sh[i]+bo.se.sh[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.sh[i]-bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]-bo.se.sh[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.sh[i]+bo.se.sh[i]),x1=i+0.1,y1=(bo.surv.sh[i]+bo.se.sh[i]),col='black',lwd=1)
   
-  segments(x0=i,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]-bo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(bo.surv.ma[i]+bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]+bo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i,y1=(bo.surv.ma[i]+bo.se.ma[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.ma[i]-bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]-bo.se.ma[i]),col='black',lwd=1)
+  segments(x0=i-0.1,y0=(bo.surv.ma[i]+bo.se.ma[i]),x1=i+0.1,y1=(bo.surv.ma[i]+bo.se.ma[i]),col='black',lwd=1)
   
 }
 
@@ -125,6 +144,9 @@ points(bo.surv.ma,col=cols[4],pch=20,cex=1.5)
 legend('topright',lwd=1,col=c(cols[3],cols[4],cols[2],cols[1]),pch=20,lty=c(1,2,2,1),
        legend=c('Shelterwood','Forest','Clearcut Edge','Clearcut Interior'))
 
+
+par(mar = c(0,3,1,1) + 0.1)
+
 plot(wo.surv.cl,type="o",lwd=1,ylim=c(0,1),xaxt='n',xlab="Time",ylab="",xlim=c(1,8.5),
      col=cols[1],pch=20,cex=1.5)
 text(2,0.1,'White Oak',cex=1.3)
@@ -135,27 +157,27 @@ segments(x0=8.3,y0=0.36,x1=8.3,y1=0.48,lwd=1)
 segments(x0=8.3,y0=0.36,x1=8.2,y1=0.36,lwd=1)
 segments(x0=8.3,y0=0.48,x1=8.2,y1=0.48,lwd=1)
 
-lines(wo.surv.cl,type="o",lwd=1,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
-lines(wo.surv.eg,type="o",lwd=1,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
-lines(wo.surv.sh,type="o",lwd=1,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
-lines(wo.surv.ma,type="o",lwd=1,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
+lines(wo.surv.cl,type="o",lwd=lwds,col=cols[1],pch=20,cex=1.5,lty=ltys[1])
+lines(wo.surv.eg,type="o",lwd=lwds,col=cols[2],pch=20,cex=1.5,lty=ltys[2])
+lines(wo.surv.sh,type="o",lwd=lwds,col=cols[3],pch=20,cex=1.5,lty=ltys[3])
+lines(wo.surv.ma,type="o",lwd=lwds,col=cols[4],pch=20,cex=1.5,lty=ltys[4])
 
 for(i in 2:8){
-  segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)  
-  segments(x0=i-0.1,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]-wo.se.cl[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.cl[i]+wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]+wo.se.cl[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i,y1=(wo.surv.cl[i]+wo.se.cl[i]),col="black",lwd=1)  
+  segments(x0=i-0.1,y0=(wo.surv.cl[i]-wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]-wo.se.cl[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.cl[i]+wo.se.cl[i]),x1=i+0.1,y1=(wo.surv.cl[i]+wo.se.cl[i]),col="black",lwd=1)
   
-  segments(x0=i,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]-wo.se.eg[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.eg[i]+wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]+wo.se.eg[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i,y1=(wo.surv.eg[i]+wo.se.eg[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.eg[i]-wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]-wo.se.eg[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.eg[i]+wo.se.eg[i]),x1=i+0.1,y1=(wo.surv.eg[i]+wo.se.eg[i]),col="black",lwd=1)
   
-  segments(x0=i,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]-wo.se.sh[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.sh[i]+wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]+wo.se.sh[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i,y1=(wo.surv.sh[i]+wo.se.sh[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.sh[i]-wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]-wo.se.sh[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.sh[i]+wo.se.sh[i]),x1=i+0.1,y1=(wo.surv.sh[i]+wo.se.sh[i]),col="black",lwd=1)
   
-  segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]-wo.se.ma[i]),col=cols[3],lwd=1)
-  segments(x0=i-0.1,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]+wo.se.ma[i]),col=cols[3],lwd=1)
+  segments(x0=i,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i,y1=(wo.surv.ma[i]+wo.se.ma[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.ma[i]-wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]-wo.se.ma[i]),col="black",lwd=1)
+  segments(x0=i-0.1,y0=(wo.surv.ma[i]+wo.se.ma[i]),x1=i+0.1,y1=(wo.surv.ma[i]+wo.se.ma[i]),col="black",lwd=1)
   
 }
 
